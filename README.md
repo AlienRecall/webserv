@@ -26,6 +26,11 @@ Build and start `webserv` using docker:
 $ docker build -t webserv . && docker run -d --name webserv -p 8080 webserv && docker exec -it webserv /bin/bash
 ```
 
+See logs via docker:
+```bash
+$ docker logs webserv -f
+```
+
 Run locally using make:
 ```bash
 $ make
