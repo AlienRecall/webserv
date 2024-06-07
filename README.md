@@ -9,8 +9,9 @@ You will be able to test it with an actual browser.
 HTTP is one of the most used protocols on the internet.
 Knowing its arcane will be useful, even if you won’t be working on a website.
 ## Prerequisites
-As we choose to use epoll, our webserv require a linux OS to work, so you can use docker or run this project locally if you have linux
+As we choose to use epoll, our webserv requires a linux OS to work, so you can use docker or run this project locally if you have linux
  - [Docker](https://docs.docker.com/engine/install/)
+ - Any linux port, we used ubuntu:latest docker image
 
 
 ## Installation
