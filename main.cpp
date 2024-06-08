@@ -7,6 +7,5 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::string f = argv[1];
-    ConfigParser parser(f);
+    ConfigParser parser(argv[1]);
 }

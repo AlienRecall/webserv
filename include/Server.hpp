@@ -3,14 +3,18 @@
 
 #include "Config.hpp"
 
-#define METHOD_GET "GET"
-#define METHOD_POST "POST"
-#define METHOD_DELETE "DELETE"
-#define METHOD_PUT "PUT"
+enum Methods {
+    GET,
+    POST,
+    DELETE,
+    PUT,
+    OPTION,
+    HEAD,
+};
 
 class Server {
   private:
-    const Config &_config;
+    Config &_config;
 
   public:
     Server(const Config &conf);
