@@ -7,12 +7,15 @@
 #include <cctype>
 #include <cstdlib>
 #include <fstream>
+#include <string>
 #include <vector>
 
-std::string expected_keys[12] = {
-    "server_name", "host",  "port",           "client_body_size",
-    "error_page",  "index", "allow_methods",  "redirect",
-    "autoindex",   "root",  "cgi_extensions", "location"};
+#define LOCATION_KEY 12
+std::string expected_keys[13] = {
+    "server_name",      "host",  "port",           "error_page",
+    "client_body_size", "index", "allow_methods",  "redirect",
+    "autoindex",        "root",  "cgi_extensions", "upload_location",
+    "location"};
 
 class ConfigParser {
   private:
@@ -23,14 +26,18 @@ class ConfigParser {
     std::vector<Config> _configs;
 
     ConfigParser();
+    ConfigParser(const ConfigParser &);
 
     Error take_key(std::string);
     Error take_value(std::string);
     Error detect_field(std::string);
 
+    Error parse_segment(std::ifstream &file, Config &conf,
+                        std::string route = "");
     Error parse_location(std::ifstream &);
     Error parse_server(std::ifstream &);
 
+    Error populate_route_config(RouteConfig &);
     Error populate_config(Config &);
 
   public:
@@ -39,7 +46,6 @@ class ConfigParser {
     iterator end() { return _configs.end(); }
 
     ConfigParser(const std::string &);
-    ConfigParser(const ConfigParser &);
     ~ConfigParser();
     ConfigParser &operator=(const ConfigParser &);
 

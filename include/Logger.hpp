@@ -52,7 +52,7 @@ class Logger {
     Error log_error(Error err, std::string line = "") {
         print_title();
         if (line != "")
-            std::cout << "On line: " << line << std::endl << "\t";
+            std::cout << "On line: " << line << std::endl << "\tMessage:";
         switch (err) {
         case OPEN_FILE:
             std::cout << "cannot open file";
@@ -75,7 +75,6 @@ class Logger {
         case NO_KEY_FOUND:
             std::cout << "unexpected key";
             break;
-
         default:
             break;
         }
