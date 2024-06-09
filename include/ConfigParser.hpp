@@ -11,7 +11,7 @@
 #include <vector>
 
 #define LOCATION_KEY 12
-std::string expected_keys[13] = {
+static std::string expected_keys[13] = {
     "server_name",      "host",  "port",           "error_page",
     "client_body_size", "index", "allow_methods",  "redirect",
     "autoindex",        "root",  "cgi_extensions", "upload_location",
@@ -24,6 +24,7 @@ class ConfigParser {
     unsigned int _key_type;
     std::string _key, _value;
     std::vector<Config> _configs;
+    Config *_actual;
 
     ConfigParser();
     ConfigParser(const ConfigParser &);
@@ -32,8 +33,7 @@ class ConfigParser {
     Error take_value(std::string);
     Error detect_field(std::string);
 
-    Error parse_segment(std::ifstream &file, Config &conf,
-                        std::string route = "");
+    Error parse_segment(std::ifstream &, RouteConfig *, std::string = "");
     Error parse_location(std::ifstream &);
     Error parse_server(std::ifstream &);
 

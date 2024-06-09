@@ -52,7 +52,7 @@ class Logger {
     Error log_error(Error err, std::string line = "") {
         print_title();
         if (line != "")
-            std::cout << "On line: " << line << std::endl << "\tMessage:";
+            std::cout << "On line: " << line << std::endl << "\tMessage: ";
         switch (err) {
         case OPEN_FILE:
             std::cout << "cannot open file";

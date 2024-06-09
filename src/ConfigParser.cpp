@@ -1,6 +1,7 @@
 #include "../include/ConfigParser.hpp"
+#include <string>
 
-ConfigParser::ConfigParser() : logger(Logger("ConfigParser")) {}
+ConfigParser::ConfigParser() : logger(Logger("ConfigParser")) { _actual = 0; }
 
 ConfigParser::~ConfigParser() {}
 
@@ -19,6 +20,8 @@ ConfigParser::ConfigParser(const std::string &file)
     : logger(Logger("ConfigParser")), _config_file(file) {}
 
 Error ConfigParser::populate_config(Config &conf) {
+    std::cout << "populating key_type: " << _key_type
+              << ", with value: " << _value << std::endl;
     switch (_key_type) {
     case 0:
         conf.set_server_name(_value);
@@ -34,9 +37,11 @@ Error ConfigParser::populate_config(Config &conf) {
 }
 
 Error ConfigParser::populate_route_config(RouteConfig &conf) {
+    std::cout << "populating key_type: " << _key_type
+              << ", with value: " << _value << std::endl;
     switch (_key_type) {
     case 3: {
-        int tosplit = _value.find_first_of("    ");
+        int tosplit = _value.find_first_of("	 ");
         unsigned int status = atoi(_value.substr(0, tosplit).c_str());
         conf.set_error_page(status, _value.substr(tosplit + 1));
         break;
@@ -62,9 +67,11 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
     case 10:
         conf.set_cgi_ext(_value);
         break;
-    case 11:
+    case 11: {
+        std::cout << "ciaoo" << std::endl;
         conf.set_upload_location(_value);
         break;
+    }
     }
     return OK;
 }
@@ -76,16 +83,9 @@ Error ConfigParser::take_value(std::string line) {
     if (pos == std::string::npos)
         return _key_type == LOCATION_KEY ? NO_CURLY : NO_SEMICOLON;
     size_t start = line.find(_key) + _key.length();
-    start = line.find_first_not_of("     ", start);
+    start = line.find_first_not_of("	 ", start);
     if (line[start] == ';')
         return NO_VALUE;
-    // for (; start < line.length(); start++) {
-    //     if (std::isspace(line[start]))
-    //         continue;
-    //     if (line[start] == ';')
-
-    //     break;
-    // }
     _value = line.substr(start, pos - start);
     if (_key_type == LOCATION_KEY && _value[0] != '/')
         _value = '/' + _value;
@@ -132,25 +132,23 @@ Error ConfigParser::detect_field(std::string line) {
     if (err != OK)
         return logger.log_error(err, line);
     _key_type = is_valid_key(_key);
-    if (_key_type == -1)
+    if (static_cast<int>(_key_type) == -1)
         return logger.log_error(NO_KEY_FOUND, line);
-    if (_key_type == LOCATION_KEY)
-        return OK;
     err = take_value(line);
     if (err != OK)
         return logger.log_error(err, line);
     return OK;
 }
 
-Error ConfigParser::parse_segment(std::ifstream &file, Config &conf,
+Error ConfigParser::parse_segment(std::ifstream &file, RouteConfig *rc,
                                   std::string route) {
     Error err;
     std::string line;
-    RouteConfig route_conf;
+    RouteConfig *route_conf;
 
     while (file) {
         std::getline(file, line);
-        if (line == "}")
+        if (line.find('}') != std::string::npos)
             break;
         if (line.empty())
             continue;
@@ -158,14 +156,21 @@ Error ConfigParser::parse_segment(std::ifstream &file, Config &conf,
         if (err != OK && err != EMPTY_LINE)
             return err;
         if (_key_type == LOCATION_KEY) {
-            parse_segment(file, conf, route + _value);
-            conf.set_location(_value, route_conf);
+            route_conf = new RouteConfig();
+            _actual->set_location(route.empty() ? _value : route + _value,
+                                  route_conf);
+            // std::cout << "loc: " << _value << std::endl;
+            parse_segment(file, route_conf, route + _value);
+            // std::cout << "index: " << route_conf->get_index() << std::endl;
         } else if (route.empty()) {
-            _key_type < 3 ? populate_config(conf) : populate_route_config(conf);
+            _key_type < 3 ? populate_config(*_actual)
+                          : populate_route_config(*_actual);
         } else {
-            populate_route_config(route_conf);
+            populate_route_config(*rc);
         }
     }
+    if (_actual->size() == 0)
+        delete route_conf;
     return OK;
 }
 
@@ -173,10 +178,12 @@ Error ConfigParser::parse_server(std::ifstream &file) {
     Error err;
     std::string line;
     Config conf;
+    _actual = &conf;
 
-    err = parse_segment(file, conf);
+    err = parse_segment(file, 0);
     if (err != OK)
         return err;
+    _actual = 0;
     _configs.push_back(conf);
     return OK;
 }
@@ -199,5 +206,6 @@ Error ConfigParser::load_config() {
                 return err;
         }
     }
+    std::cout << "size: " << _configs.size() << std::endl;
     return OK;
 }
