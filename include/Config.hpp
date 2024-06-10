@@ -41,8 +41,8 @@ class RouteConfig {
     RouteConfig &operator=(const RouteConfig &);
 
     typedef std::map<unsigned int, std::string>::iterator error_pages_iterator;
-    error_pages_iterator begin() { return _error_pages.begin(); }
-    error_pages_iterator end() { return _error_pages.end(); }
+    error_pages_iterator error_pages_begin() { return _error_pages.begin(); }
+    error_pages_iterator error_pages_end() { return _error_pages.end(); }
 
     void set_allowed_methods(std::string &);
     void set_client_body_size(unsigned int);
@@ -80,9 +80,9 @@ class Config : public RouteConfig {
     Config &operator=(const Config &);
 
     typedef std::map<std::string, RouteConfig *>::iterator routes_iterator;
-    routes_iterator begin() { return _routes.begin(); }
-    routes_iterator end() { return _routes.end(); }
-    unsigned int size() { return _routes.size(); }
+    routes_iterator routes_begin() { return _routes.begin(); }
+    routes_iterator routes_end() { return _routes.end(); }
+    unsigned int routes_size() { return _routes.size(); }
 
     void set_server_name(const std::string &);
     void set_host(const std::string &);

@@ -51,8 +51,6 @@ class Logger {
 
     Error log_error(Error err, std::string line = "") {
         print_title();
-        if (line != "")
-            std::cout << "On line: " << line << std::endl << "\tMessage: ";
         switch (err) {
         case OPEN_FILE:
             std::cout << "cannot open file";
@@ -79,7 +77,9 @@ class Logger {
             break;
         }
         std::cout << std::endl;
-        return OK;
+        if (line != "")
+            std::cout << "\ton line: " << line << std::endl;
+        return err;
     }
 };
 

@@ -1,5 +1,5 @@
 #include "../include/ConfigParser.hpp"
-#include <string>
+#include <unistd.h>
 
 ConfigParser::ConfigParser() : logger(Logger("ConfigParser")) { _actual = 0; }
 
@@ -68,7 +68,6 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
         conf.set_cgi_ext(_value);
         break;
     case 11: {
-        std::cout << "ciaoo" << std::endl;
         conf.set_upload_location(_value);
         break;
     }
@@ -148,29 +147,28 @@ Error ConfigParser::parse_segment(std::ifstream &file, RouteConfig *rc,
 
     while (file) {
         std::getline(file, line);
-        if (line.find('}') != std::string::npos)
-            break;
         if (line.empty())
             continue;
+        if (line.find('}') != std::string::npos)
+            break;
         err = detect_field(line);
         if (err != OK && err != EMPTY_LINE)
             return err;
         if (_key_type == LOCATION_KEY) {
             route_conf = new RouteConfig();
-            _actual->set_location(route.empty() ? _value : route + _value,
-                                  route_conf);
-            // std::cout << "loc: " << _value << std::endl;
-            parse_segment(file, route_conf, route + _value);
-            // std::cout << "index: " << route_conf->get_index() << std::endl;
+            _actual->set_location(route + _value, route_conf);
+            err = parse_segment(file, route_conf, route + _value);
+            if (err != OK)
+                return err;
         } else if (route.empty()) {
-            _key_type < 3 ? populate_config(*_actual)
-                          : populate_route_config(*_actual);
+            if (_key_type < 3)
+                populate_config(*_actual);
+            else
+                populate_route_config(*_actual);
         } else {
             populate_route_config(*rc);
         }
     }
-    if (_actual->size() == 0)
-        delete route_conf;
     return OK;
 }
 
@@ -200,6 +198,8 @@ Error ConfigParser::load_config() {
 
     while (file) {
         std::getline(file, line);
+        if (line.empty())
+            continue;
         if (line.find("server {") != std::string::npos) {
             err = parse_server(file);
             if (err != OK)

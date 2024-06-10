@@ -154,8 +154,8 @@ std::ostream &operator<<(std::ostream &os, RouteConfig &conf) {
     }
     if (conf.get_upload_location() != "")
         os << "	upload location: " << conf.get_upload_location() << std::endl;
-    for (RouteConfig::error_pages_iterator it = conf.begin(); it != conf.end();
-         it++) {
+    for (RouteConfig::error_pages_iterator it = conf.error_pages_begin();
+         it != conf.error_pages_end(); it++) {
         os << "	error page for status: " << it->first << ": " << it->second
            << std::endl;
     }
