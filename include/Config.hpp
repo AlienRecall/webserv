@@ -51,7 +51,8 @@ class RouteConfig {
     void set_dir_listing(const std::string &);
     void set_cgi_ext(std::string &);
     void set_upload_location(const std::string &);
-    void set_error_page(unsigned int, const std::string &);
+    void set_error_page(const std::string &, const std::string &);
+    void set_error_pages(std::string &);
 
     int get_allowed_methods() const;
     unsigned int get_client_body_size() const;

@@ -83,7 +83,7 @@ std::ostream &operator<<(std::ostream &os, Config &conf) {
         os << "upload location: " << conf.get_upload_location() << std::endl;
     for (RouteConfig::error_pages_iterator it = conf.error_pages_begin();
          it != conf.error_pages_end(); it++) {
-        os << "error page for status: " << it->first << " is: " << it->second
+        os << "error page for status `" << it->first << "` is: " << it->second
            << std::endl;
     }
     for (Config::routes_iterator it = conf.routes_begin();

@@ -39,12 +39,9 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
     // std::cout << "populating key_type: " << _key_type << ", with value: " <<
     // _value << std::endl;
     switch (_key_type) {
-    case 3: {
-        int tosplit = _value.find_first_of("	 ");
-        unsigned int status = std::atoi(_value.substr(0, tosplit).c_str());
-        conf.set_error_page(status, _value.substr(tosplit + 1));
+    case 3:
+        conf.set_error_pages(_value);
         break;
-    }
     case 4:
         conf.set_client_body_size(std::atoi(_value.c_str()));
         break;

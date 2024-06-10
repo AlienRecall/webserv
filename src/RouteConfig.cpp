@@ -83,8 +83,28 @@ void RouteConfig::set_upload_location(const std::string &v) {
     _upload_location = v;
 }
 
-void RouteConfig::set_error_page(unsigned int status, const std::string &page) {
-    _error_pages[status] = page;
+void RouteConfig::set_error_page(const std::string &s, const std::string &p) {
+    unsigned int status = std::atoi(s.c_str());
+    if (status == 0)
+        return;
+    _error_pages[status] = p;
+}
+
+void RouteConfig::set_error_pages(std::string &error_pages) {
+    size_t pos = error_pages.find_last_of(' ');
+    if (pos == std::string::npos)
+        return;
+    std::string page = error_pages.substr(pos + 1);
+    error_pages.erase(pos);
+    std::string token;
+    while ((pos = error_pages.find_first_of("	 ")) != std::string::npos) {
+        token = error_pages.substr(0, pos);
+        set_error_page(token, page);
+        error_pages.erase(0, pos + 1);
+    }
+    if (!error_pages.empty()) {
+        set_error_page(error_pages, page);
+    }
 }
 
 int RouteConfig::get_allowed_methods() const { return _allowed_methods; }
@@ -155,7 +175,7 @@ std::ostream &operator<<(std::ostream &os, RouteConfig &conf) {
         os << "	upload location: " << conf.get_upload_location() << std::endl;
     for (RouteConfig::error_pages_iterator it = conf.error_pages_begin();
          it != conf.error_pages_end(); it++) {
-        os << "	error page for status: " << it->first << ": " << it->second
+        os << "	error page for status `" << it->first << "` is: " << it->second
            << std::endl;
     }
     return os;
