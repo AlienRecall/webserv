@@ -20,8 +20,7 @@ enum Methods {
 };
 
 class RouteConfig {
-  private:
-    std::list<std::string> _methods;
+  protected:
     int _allowed_methods;
     unsigned int _client_body_size;
     std::string _redirect;

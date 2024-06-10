@@ -12,3 +12,5 @@ Server &Server::operator=(const Server &s) {
     _config = s._config;
     return *this;
 }
+
+void Server::start_server() {}

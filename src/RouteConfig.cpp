@@ -14,7 +14,6 @@ RouteConfig::RouteConfig(const RouteConfig &rc) { *this = rc; }
 RouteConfig &RouteConfig::operator=(const RouteConfig &rc) {
     if (this == &rc)
         return *this;
-    _methods = rc._methods;
     _allowed_methods = rc._allowed_methods;
     _client_body_size = rc._client_body_size;
     _redirect = rc._redirect;

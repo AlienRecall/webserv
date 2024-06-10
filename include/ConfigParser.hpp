@@ -34,7 +34,6 @@ class ConfigParser {
     Error detect_field(std::string);
 
     Error parse_segment(std::ifstream &, RouteConfig *, std::string = "");
-    Error parse_location(std::ifstream &);
     Error parse_server(std::ifstream &);
 
     Error populate_route_config(RouteConfig &);

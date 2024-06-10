@@ -7,12 +7,11 @@ class Server {
   private:
     Config &_config;
 
-    Server(const Server &);
-    Server &operator=(const Server &);
-
   public:
     Server(Config &conf);
     ~Server();
+    Server(const Server &);
+    Server &operator=(const Server &);
 
     void start_server();
 };

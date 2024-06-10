@@ -1,5 +1,4 @@
 #include "../include/ConfigParser.hpp"
-#include <unistd.h>
 
 ConfigParser::ConfigParser() : logger(Logger("ConfigParser")) { _actual = 0; }
 
@@ -42,12 +41,12 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
     switch (_key_type) {
     case 3: {
         int tosplit = _value.find_first_of("	 ");
-        unsigned int status = atoi(_value.substr(0, tosplit).c_str());
+        unsigned int status = std::atoi(_value.substr(0, tosplit).c_str());
         conf.set_error_page(status, _value.substr(tosplit + 1));
         break;
     }
     case 4:
-        conf.set_client_body_size(atoi(_value.c_str()));
+        conf.set_client_body_size(std::atoi(_value.c_str()));
         break;
     case 5:
         conf.set_index(_value);
