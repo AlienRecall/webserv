@@ -21,4 +21,6 @@ int main(int argc, char *argv[]) {
         Server s(*it);
         s.start_server();
     }
+
+    return 0;
 }

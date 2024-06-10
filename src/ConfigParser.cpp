@@ -19,8 +19,8 @@ ConfigParser::ConfigParser(const std::string &file)
     : logger(Logger("ConfigParser")), _config_file(file) {}
 
 Error ConfigParser::populate_config(Config &conf) {
-    std::cout << "populating key_type: " << _key_type
-              << ", with value: " << _value << std::endl;
+    // std::cout << "populating key_type: " << _key_type << ", with value: " <<
+    // _value << std::endl;
     switch (_key_type) {
     case 0:
         conf.set_server_name(_value);
@@ -36,8 +36,8 @@ Error ConfigParser::populate_config(Config &conf) {
 }
 
 Error ConfigParser::populate_route_config(RouteConfig &conf) {
-    std::cout << "populating key_type: " << _key_type
-              << ", with value: " << _value << std::endl;
+    // std::cout << "populating key_type: " << _key_type << ", with value: " <<
+    // _value << std::endl;
     switch (_key_type) {
     case 3: {
         int tosplit = _value.find_first_of("	 ");

@@ -3,7 +3,11 @@
 
 Config::Config() : RouteConfig() {}
 
-Config::~Config() {}
+Config::~Config() {
+    for (routes_iterator it = _routes.begin(); it != _routes.end(); it++) {
+        delete it->second;
+    }
+}
 
 Config::Config(const Config &c) : RouteConfig(c) { *this = c; }
 
@@ -13,7 +17,10 @@ Config &Config::operator=(const Config &c) {
     _server_name = c._server_name;
     _host = c._host;
     _port = c._port;
-    _routes = c._routes;
+    for (const_routes_iterator it = c._routes.begin(); it != c._routes.end();
+         it++) {
+        _routes[it->first] = new RouteConfig(*(it->second));
+    }
     return *this;
 }
 
