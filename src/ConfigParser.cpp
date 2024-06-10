@@ -82,7 +82,7 @@ Error ConfigParser::take_value(std::string line) {
         return _key_type == LOCATION_KEY ? NO_CURLY : NO_SEMICOLON;
     size_t start = line.find(_key) + _key.length();
     start = line.find_first_not_of("	 ", start);
-    if (line[start] == ';')
+    if (line[start] == ';' || pos <= start)
         return NO_VALUE;
     _value = line.substr(start, pos - start);
     if (_key_type == LOCATION_KEY && _value[0] != '/')
