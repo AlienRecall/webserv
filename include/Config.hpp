@@ -77,8 +77,8 @@ class Config : public RouteConfig {
     Config(const Config &);
     Config &operator=(const Config &);
 
-    typedef std::map<std::string, RouteConfig *>::iterator routes_iterator;
     typedef std::map<std::string, RouteConfig *>::const_iterator const_routes_iterator;
+    typedef std::map<std::string, RouteConfig *>::iterator routes_iterator;
     routes_iterator routes_begin() { return _routes.begin(); }
     routes_iterator routes_end() { return _routes.end(); }
     unsigned int routes_size() { return _routes.size(); }
@@ -92,6 +92,8 @@ class Config : public RouteConfig {
     std::string get_host() const;
     std::string get_port() const;
     RouteConfig *get_location(const std::string &loc);
+
+    void clear_routes();
 };
 
 std::ostream &operator<<(std::ostream &, Config &);

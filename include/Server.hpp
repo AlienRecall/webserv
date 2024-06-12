@@ -17,17 +17,17 @@ class Server {
   private:
     int _fd;
     Logger logger;
-    Config &_config;
+    Config *_config;
 
   public:
-    Server(Config &conf);
+    Server(Config *conf);
     ~Server();
     Server(const Server &);
     Server &operator=(const Server &);
 
     void close_fd();
     int get_fd() const;
-    Config &get_config() const;
+    Config *get_config();
     Error open_socket();
 };
 

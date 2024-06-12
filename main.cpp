@@ -1,7 +1,9 @@
+#include "include/Config.hpp"
 #include "include/Logger.hpp"
 #include "include/Server.hpp"
 #include "include/webserv.hpp"
 #include <cstring>
+#include <ctime>
 #include <iostream>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -11,32 +13,33 @@
 int main(int argc, char *argv[]) {
     Error err;
     t_webserv w;
-    if (argc < 2 || argc > 3) {
+    if (argc < 2 || argc > 3)
         return w.logger.error("Expected one argument.\n\tUsage: ./webserv [config.conf]");
-    }
 
     std::string config_file = argv[1];
     if (argc == 3 && std::strncmp(argv[2], "-d", 2) == 0)
         w.logger.set_debug(true);
 
-    w.logger.debug("parsing `" + config_file + "`");
-    ConfigParser parser(config_file);
-    err = parser.load_config();
-    if (err != OK) {
-        std::cout << "error code: " << err << std::endl;
-        return 1;
-    }
+    {
+        w.logger.debug("parsing `" + config_file + "`");
+        ConfigParser parser(config_file);
+        err = parser.load_config();
+        if (err != OK) {
+            std::cout << "error code: " << err << std::endl;
+            return 1;
+        }
 
-    w.logger.debug("loaded " + uitoa(parser.size()) + " servers.");
-    w.logger.debug("setting up servers...");
-    for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++) {
-        Server s(*it);
-        // err = s.sanitize();
-        // if (err != OK) {
-        //     return 1;
-        // }
-        s.open_socket();
-        w.sm.push_server(s);
+        w.logger.debug("loaded " + uitoa(parser.size()) + " servers.");
+        w.logger.debug("setting up servers...");
+        for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++) {
+            Server s = Server(new Config(*it));
+            // err = s.sanitize();
+            // if (err != OK) {
+            //     return 1;
+            // }
+            s.open_socket();
+            w.sm.push_server(s);
+        }
     }
 
     w.logger.debug("initializing webserv.");
@@ -45,11 +48,12 @@ int main(int argc, char *argv[]) {
         return w.logger.error("epoll_create error");
 
     for (ServersManager::iterator it = w.sm.begin(); it != w.sm.end(); it++) {
-        std::cout << it->get_config() << std::endl;
-        add_epoll(epoll_fd, it->get_fd());
+        std::cout << "server fd: " << (*it).get_fd() << std::endl;
+        std::cout << *(*it).get_config() << std::endl;
+        add_epoll(epoll_fd, (*it).get_fd());
     }
 
-    w.logger.print("ready.");
+    w.logger.print_ts("ready.");
     int fd;
     struct epoll_event events[MAX_EVENTS];
     while (true) {
@@ -86,3 +90,15 @@ int main(int argc, char *argv[]) {
     }
     close(epoll_fd);
 }
+
+// test normal application with 2 servers
+// STACK: 0.000511 sec
+// HEAP: 0.001138 sec
+
+// test with pass function and 15 servers
+// STACK: 0.002603
+// HEAP: 0.001282
+
+// test normal application and 15 servers
+// STACK: 0.001623
+// HEAP: 0.000839

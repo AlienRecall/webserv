@@ -11,6 +11,11 @@ ConfigParser::ConfigParser(const ConfigParser &cp) : logger(Logger("ConfigParser
 ConfigParser &ConfigParser::operator=(const ConfigParser &cp) {
     if (this == &cp)
         return *this;
+    _config_file = cp._config_file;
+    _key_type = cp._key_type;
+    _key = cp._key;
+    _value = cp._value;
+    _configs = cp._configs;
     return *this;
 }
 
@@ -176,8 +181,8 @@ Error ConfigParser::parse_server(std::ifstream &file) {
     err = parse_segment(file, 0);
     if (err != OK)
         return err;
-    _actual = 0;
     _configs.push_back(conf);
+    _actual = 0;
     return OK;
 }
 
@@ -197,8 +202,9 @@ Error ConfigParser::load_config() {
             continue;
         if (line.find("server {") != std::string::npos) {
             err = parse_server(file);
-            if (err != OK)
+            if (err != OK) {
                 return err;
+            }
         }
     }
     std::cout << "size: " << _configs.size() << std::endl;

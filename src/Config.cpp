@@ -7,11 +7,13 @@ Config::Config() : RouteConfig() {
     _port = "";
 }
 
-Config::~Config() {
+void Config::clear_routes() {
     for (routes_iterator it = _routes.begin(); it != _routes.end(); it++) {
         delete it->second;
     }
 }
+
+Config::~Config() { clear_routes(); }
 
 Config::Config(const Config &c) : RouteConfig(c) { *this = c; }
 
@@ -21,6 +23,15 @@ Config &Config::operator=(const Config &c) {
     _server_name = c._server_name;
     _host = c._host;
     _port = c._port;
+    _allowed_methods = c._allowed_methods;
+    _client_body_size = c._client_body_size;
+    _redirect = c._redirect;
+    _root = c._root;
+    _index = c._index;
+    _dir_listing = c._dir_listing;
+    _cgi_extensions = c._cgi_extensions;
+    _error_pages = c._error_pages;
+    clear_routes();
     for (const_routes_iterator it = c._routes.begin(); it != c._routes.end(); it++) {
         _routes[it->first] = new RouteConfig(*(it->second));
     }
