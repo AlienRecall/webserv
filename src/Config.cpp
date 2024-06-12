@@ -1,7 +1,11 @@
 #include "../include/Config.hpp"
 #include <string>
 
-Config::Config() : RouteConfig() {}
+Config::Config() : RouteConfig() {
+    _server_name = "";
+    _host = "";
+    _port = "";
+}
 
 Config::~Config() {
     for (routes_iterator it = _routes.begin(); it != _routes.end(); it++) {
@@ -17,8 +21,7 @@ Config &Config::operator=(const Config &c) {
     _server_name = c._server_name;
     _host = c._host;
     _port = c._port;
-    for (const_routes_iterator it = c._routes.begin(); it != c._routes.end();
-         it++) {
+    for (const_routes_iterator it = c._routes.begin(); it != c._routes.end(); it++) {
         _routes[it->first] = new RouteConfig(*(it->second));
     }
     return *this;
@@ -73,8 +76,7 @@ std::ostream &operator<<(std::ostream &os, Config &conf) {
     std::list<std::string> l = conf.get_cgi_ext();
     if (!l.empty()) {
         os << "cgi extensions: ";
-        for (std::list<std::string>::iterator it = l.begin(); it != l.end();
-             it++) {
+        for (std::list<std::string>::iterator it = l.begin(); it != l.end(); it++) {
             os << *it << " ";
         }
         os << std::endl;
@@ -86,8 +88,8 @@ std::ostream &operator<<(std::ostream &os, Config &conf) {
         os << "error page for status `" << it->first << "` is: " << it->second
            << std::endl;
     }
-    for (Config::routes_iterator it = conf.routes_begin();
-         it != conf.routes_end(); it++) {
+    for (Config::routes_iterator it = conf.routes_begin(); it != conf.routes_end();
+         it++) {
         os << "location: " << it->first << std::endl;
         os << *(it->second) << std::endl;
     }

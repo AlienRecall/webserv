@@ -43,6 +43,7 @@ class ConfigParser {
     typedef std::vector<Config>::iterator iterator;
     iterator begin() { return _configs.begin(); }
     iterator end() { return _configs.end(); }
+    unsigned int size() const { return _configs.size(); }
 
     ConfigParser(const std::string &);
     ~ConfigParser();

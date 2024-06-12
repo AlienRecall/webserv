@@ -13,4 +13,4 @@ RUN make re
 
 EXPOSE 8080
 
-CMD ["./webserv"]
+CMD ["./webserv", "configs/basic.conf", "-d"]

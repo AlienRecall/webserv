@@ -5,8 +5,8 @@
 #include <string>
 
 enum Error {
-    OK,
-    CUSTOM,
+    OK = 0,
+    CUSTOM = -1,
     OPEN_FILE,
     EMPTY_LINE,
     NO_VALUE,
@@ -18,69 +18,27 @@ enum Error {
 
 class Logger {
   private:
+    bool _debug;
     std::string _title;
 
-    void print_ts() {
-        time_t now = time(0);
-        struct tm tstruct;
-        char buf[80];
-        tstruct = *localtime(&now);
-        strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    Logger();
 
-        std::cout << "[" << buf << "] ";
-    }
-
-    void print_title() { std::cout << _title << ": "; }
+    void print_ts();
+    void print_title();
 
   public:
-    Logger(const std::string &t) : _title(t) {}
-    ~Logger() {}
+    Logger(const std::string &);
+    ~Logger();
+    Logger &operator=(const Logger &);
 
-    void log_server(std::string line) {
-        print_ts();
-        print_title();
-        std::cout << line << std::endl;
-    }
+    void set_debug(bool);
+    void set_title(const std::string &);
 
-    Error log_custom_error(const std::string &str) {
-        print_title();
-
-        std::cout << str << std::endl;
-        return CUSTOM;
-    }
-
-    Error log_error(Error err, std::string line = "") {
-        print_title();
-        switch (err) {
-        case OPEN_FILE:
-            std::cout << "cannot open file";
-            break;
-        case EMPTY_LINE:
-            std::cout << "empty line";
-            break;
-        case NO_VALUE:
-            std::cout << "key does not have a value";
-            break;
-        case WRONG_SEMICOLON:
-            std::cout << "';' in wrong place";
-            break;
-        case NO_SEMICOLON:
-            std::cout << "no ';' at the end of line";
-            break;
-        case NO_CURLY:
-            std::cout << "expected '{' after location declaration";
-            break;
-        case NO_KEY_FOUND:
-            std::cout << "unexpected key";
-            break;
-        default:
-            break;
-        }
-        std::cout << std::endl;
-        if (line != "")
-            std::cout << "\ton line: " << line << std::endl;
-        return err;
-    }
+    void print(std::string);
+    void print_ts(std::string);
+    Error error(const std::string &str);
+    Error debug(const std::string &str);
+    Error log_error(Error err, std::string line = "");
 };
 
 #endif

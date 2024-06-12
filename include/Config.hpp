@@ -1,22 +1,20 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include <cstdlib>
 #include <iostream>
 #include <list>
 #include <map>
 #include <ostream>
 #include <string>
 
-static std::string expected_methods[6] = {"GET", "POST",   "DELETE",
-                                          "PUT", "OPTION", "HEAD"};
+static std::string expected_methods[4] = {"GET", "POST", "DELETE", "PUT"};
 
 enum Methods {
     GET = 1,
     POST = 1 << 1,
     DELETE = 1 << 2,
     PUT = 1 << 3,
-    OPTION = 1 << 4,
-    HEAD = 1 << 5,
 };
 
 class RouteConfig {
@@ -27,8 +25,8 @@ class RouteConfig {
     std::string _root;
     std::string _index;
     bool _dir_listing;
-    std::list<std::string> _cgi_extensions;
     std::string _upload_location;
+    std::list<std::string> _cgi_extensions;
     std::map<unsigned int, std::string> _error_pages;
 
     void append_method(const std::string &method);
@@ -80,8 +78,7 @@ class Config : public RouteConfig {
     Config &operator=(const Config &);
 
     typedef std::map<std::string, RouteConfig *>::iterator routes_iterator;
-    typedef std::map<std::string, RouteConfig *>::const_iterator
-        const_routes_iterator;
+    typedef std::map<std::string, RouteConfig *>::const_iterator const_routes_iterator;
     routes_iterator routes_begin() { return _routes.begin(); }
     routes_iterator routes_end() { return _routes.end(); }
     unsigned int routes_size() { return _routes.size(); }

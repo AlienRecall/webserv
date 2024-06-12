@@ -4,8 +4,7 @@ ConfigParser::ConfigParser() : logger(Logger("ConfigParser")) { _actual = 0; }
 
 ConfigParser::~ConfigParser() {}
 
-ConfigParser::ConfigParser(const ConfigParser &cp)
-    : logger(Logger("ConfigParser")) {
+ConfigParser::ConfigParser(const ConfigParser &cp) : logger(Logger("ConfigParser")) {
     *this = cp;
 }
 
@@ -187,7 +186,7 @@ Error ConfigParser::load_config() {
     std::string line;
     Error err;
 
-    file.open(_config_file);
+    file.open(_config_file.c_str());
     if (!file.is_open()) {
         return OPEN_FILE;
     }
