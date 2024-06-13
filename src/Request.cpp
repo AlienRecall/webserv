@@ -2,25 +2,27 @@
 #include <cctype>
 
 int Request::getMethod(std::stringstream &buffer) {
-    int i = 0;
     std::string buff;
     buffer >> buff;
-    switch (buff.length()) { case 3: }
-    if (buff.length() == 3 && buff[i] == 'G' && buff[i + 1] == 'E' &&
-        buff[i + 2] == 'T') {
-        method = GET;
-    } else if (buff.length() == 4 && buff[i] == 'P' && buff[i + 1] == 'O' &&
-               buff[i + 2] == 'S' && buff[i + 3] == 'T') {
-        method = POST;
-    } else if (buff.length() == 6 && buff[i] == 'D' && buff[i + 1] == 'E' &&
-               buff[i + 2] == 'L' && buff[i + 3] == 'E' && buff[i + 4] == 'T' &&
-               buff[i + 5] == 'E') {
-        method = DELETE;
-    } else if (buff.length() == 3 && buff[i] == 'P' && buff[i + 1] == 'U' &&
-               buff[i + 2] == 'T') {
-        method = PUT;
-    } else
+    switch (buff.length()) {
+    case 3:
+        if (buff[0] == 'G' && buff[1] == 'E' && buff[2] == 'T')
+            method = GET;
+        else if (buff[0] == 'P' && buff[1] == 'U' && buff[2] == 'T')
+            method = PUT;
+        break;
+    case 6:
+        if (buff[0] == 'D' && buff[1] == 'E' && buff[2] == 'L' && buff[3] == 'E' &&
+            buff[4] == 'T' && buff[5] == 'E')
+            method = DELETE;
+        break;
+    case 4:
+        if (buff[0] == 'P' && buff[1] == 'O' && buff[2] == 'S' && buff[3] == 'T')
+            method = POST;
+        break;
+    default:
         return ERROR_GETTING_METHOD;
+    }
     return (OK);
 }
 
