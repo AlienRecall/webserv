@@ -2,8 +2,10 @@
 #define WEBSERV_HPP
 
 #include "Logger.hpp"
+#include "Request.hpp"
 #include "Server.hpp"
 #include "ServersManager.hpp"
+#include <cctype>
 #include <cstdlib>
 #include <fcntl.h>
 #include <sstream>

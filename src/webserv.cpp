@@ -1,4 +1,5 @@
 #include "../include/webserv.hpp"
+#include <iostream>
 #include <unistd.h>
 
 void set_fd_non_blocking(int sockfd) {
@@ -27,8 +28,9 @@ int add_epoll(int epoll_fd, int fd) {
 }
 
 int handle_client(int client_fd, t_webserv *w) {
-    int bytesRead;
+    int err, bytesRead;
     char buffer[BUFFER_SIZE + 1];
+    Request req;
 
     while ((bytesRead = read(client_fd, buffer, sizeof(buffer))) == -1) {
         continue;
@@ -39,6 +41,12 @@ int handle_client(int client_fd, t_webserv *w) {
     }
     buffer[bytesRead] = 0;
     std::cout << buffer << std::endl;
+    err = req.popRequest(buffer, client_fd);
+    if (err != OK) {
+        close(client_fd);
+        return err;
+    }
+
     close(client_fd);
     return OK;
 }
