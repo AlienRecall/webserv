@@ -32,7 +32,7 @@ int handle_client(int client_fd, t_webserv *w) {
     char buffer[BUFFER_SIZE + 1];
     Request req;
 
-    while ((bytesRead = read(client_fd, buffer, sizeof(buffer))) == -1) {
+    while ((bytesRead = read(client_fd, buffer, BUFFER_SIZE)) == -1) {
         continue;
     }
     if (bytesRead == 0) {
@@ -40,13 +40,11 @@ int handle_client(int client_fd, t_webserv *w) {
         return CUSTOM;
     }
     buffer[bytesRead] = 0;
-    std::cout << buffer << std::endl;
     err = req.popRequest(buffer, client_fd);
     if (err != OK) {
         close(client_fd);
         return err;
     }
-
     close(client_fd);
     return OK;
 }

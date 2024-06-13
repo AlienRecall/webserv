@@ -3,6 +3,7 @@
 
 #include "Config.hpp"
 #include "Logger.hpp"
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -17,22 +18,30 @@
 
 class Request {
   private:
-    int method;
-    std::string path;
-    std::string protocol;
-    std::map<std::string, std::string> headers;
-    std::string body;
+    int _method;
+    std::string _path;
+    std::string _protocol;
+    std::map<std::string, std::string> _headers;
+    std::string _body;
 
   public:
     Request();
     ~Request();
 
+    typedef std::map<std::string, std::string>::iterator iterator;
+
+    int get_method();
+    std::string &get_path();
+    std::string &get_protocol();
+    iterator get_header(const std::string &);
+    std::string &get_body();
+
     int popRequest(char *buffer, int client_request);
-    int getMethod(std::stringstream &buffer);
-    int getPath(std::stringstream &buffer);
-    int getProtocol(std::stringstream &buffer);
-    int getHeaders(std::stringstream &buffer);
-    int getBody(std::stringstream &buffer, int ClientFd);
+    int parseMethod(std::stringstream &buffer);
+    int parsePath(std::stringstream &buffer);
+    int parseProtocol(std::stringstream &buffer);
+    int parseHeaders(std::stringstream &buffer);
+    int parseBody(std::stringstream &buffer, int ClientFd);
 };
 
 #endif
