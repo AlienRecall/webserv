@@ -1,6 +1,4 @@
 #include "../include/webserv.hpp"
-#include <iostream>
-#include <unistd.h>
 
 void set_fd_non_blocking(int sockfd) {
     int flags = fcntl(sockfd, F_GETFL, 0);
@@ -40,11 +38,18 @@ int handle_client(int client_fd, t_webserv *w) {
         return CUSTOM;
     }
     buffer[bytesRead] = 0;
+    std::cout << buffer << std::endl;
     err = req.popRequest(buffer, client_fd);
     if (err != OK) {
         close(client_fd);
         return err;
     }
+    // Response res = make_response(req, w->_ptr);
+    // int bytesWrite = write(client_fd, res.str(), res.lenght());
+    // if (bytesRead == 0) {
+    //     close(client_fd);
+    //     return CUSTOM;
+    // }
     close(client_fd);
     return OK;
 }
