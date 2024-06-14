@@ -5,6 +5,7 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include "ServersManager.hpp"
+#include "Response.hpp"
 #include <cctype>
 #include <cstdlib>
 #include <fcntl.h>

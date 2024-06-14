@@ -18,7 +18,7 @@
 
 class Request {
   private:
-    int _method;
+    std::string _method;
     std::string _path;
     std::string _protocol;
     std::map<std::string, std::string> _headers;
