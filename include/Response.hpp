@@ -22,11 +22,11 @@ private:
   std::map<std::string, std::string> _headers; // Mappa per gli headers della risposta
   std::string _body;                           // Stringa per il corpo della risposta
 
-  std::string status_text(int); // Metodo per ottenere il messaggio di stato in base al codice
+  std::string status_text(int); // Metodo per ottenere il messaggio di stato
 
 public:
-  Response();  // Costruttore della classe Response
-  ~Response(); // Distruttore della classe Response
+  Response();
+  ~Response();
 
   void prepare_response(int method, std::string path);
   void set_protocol(const std::string &protocol); // protocollo HTTP
