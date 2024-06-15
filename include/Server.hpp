@@ -29,6 +29,14 @@ class Server {
     int get_fd() const;
     Config *get_config();
     Error open_socket();
+    Error get_path_rules(std::string &, RouteConfig &){
+        // trovo la path nelle locations?
+        // si: scrive le rules su il config passato come paramentro
+
+        // taglia la path
+        // se trova un'altro path si richiama se stesso
+        // fine
+    };
 };
 
 #endif
