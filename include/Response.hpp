@@ -2,6 +2,7 @@
 #define RESPONSE_HPP
 
 #include "Request.hpp"
+#include "Server.hpp"
 #include <map>
 #include <string>
 #include <utility>

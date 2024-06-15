@@ -92,55 +92,15 @@ size_t Response::length() const
 
 
 // Prepara la risposta HTTP in base alla richiesta
-void Response::prepare_response(int method, std::string path)
+void Response::prepare_response(const Request &req, Server *server)
 {
-	// Gestione della richiesta GET
-	if (method == GET)
-	{
-		std::ifstream file(path.c_str());
-		if (!file.is_open())
-		{ // Se il file non viene aperto
-			set_status(STATUS_NOT_FOUND);
-			_body = "<html><body><h1>404 Not Found</h1></body></html>";
-		}
-		else
-		{
-			std::stringstream buffer;
-			buffer << file.rdbuf(); // Leggo il contenuto del file
-			_body = buffer.str();
-			// _body = "<html><body><h1>miao</h1></body></html>";
-			set_status(STATUS_OK);
-		}
-	}
-	else if (method == POST)
-	{
-		// Gestione della richiesta POST (es. scrittura su file)
-		_body = "<html><body><h1>POST Request Handled</h1></body></html>";
-		set_status(STATUS_OK);
-	}
-	else if (method == DELETE)
-	{
-		if (remove(path.c_str()) != 0)
-		{ // Se il file non viene trovato
-			set_status(STATUS_NOT_FOUND);
-			_body = "<html><body><h1>404 Not Found</h1></body></html>";
-		}
-		else
-		{
-			set_status(STATUS_OK);
-			_body = "<html><body><h1>File Deleted</h1></body></html>";
-		}
-	}
-	else
-	{
-		// Metodo non consentito
-		set_status(STATUS_METHOD_NOT_ALLOWED);
-		_body = "<html><body><h1>405 Method Not Allowed</h1></body></html>";
-	}
+	
+	//get_rules/get_rules_config
+	//checkiamo il metodo
+	// check body size
 
-	// Imposta le intestazioni Content-Length e Content-Type
-	std::ostringstream oss;
-	oss << _body.length();
-	set_header("Content-Length", oss.str());
-	set_header("Content-Type", "text/html");
+	// checkiamo se la location/server ha una root dir
+	// check se ha una redirect
+	// 
+
 }

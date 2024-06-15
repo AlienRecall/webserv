@@ -45,9 +45,9 @@ int handle_client(int client_fd, t_webserv *w) {
         return err;
     }
     Response res;                                                  // Istanza della classe Response per generare la risposta HTTP
-    res.prepare_response(req.get_method(), req.get_path());                                     // Prepara la risposta in base alla richiesta analizzata
+    res.prepare_response(req, w->_ptr);                                     // Prepara la risposta in base alla richiesta analizzata
     char *response_str = res.c_str();                              // Converte la risposta in una stringa C
-    write(client_fd, response_str, res.length()); // Scrive la risposta al client
+    write(client_fd, response_str, res.length());                   // Scrive la risposta al client
     delete[] response_str;                                         // Dealloca la memoria allocata per la stringa di risposta
     if (bytesRead == 0) {
         close(client_fd);
