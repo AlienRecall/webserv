@@ -25,8 +25,6 @@ int add_epoll(int epoll_fd, int fd) {
     return OK;
 }
 
-
-
 int handle_client(int client_fd, t_webserv *w) {
     int err, bytesRead;
     char buffer[BUFFER_SIZE + 1];
@@ -47,7 +45,7 @@ int handle_client(int client_fd, t_webserv *w) {
         return err;
     }
     Response res;                                                  // Istanza della classe Response per generare la risposta HTTP
-    res.prepare_response(req);                                     // Prepara la risposta in base alla richiesta analizzata
+    res.prepare_response(req.get_method, req.get_path);                                     // Prepara la risposta in base alla richiesta analizzata
     char *response_str = res.c_str();                              // Converte la risposta in una stringa C
     int bytesWrite = write(client_fd, response_str, res.length()); // Scrive la risposta al client
     delete[] response_str;                                         // Dealloca la memoria allocata per la stringa di risposta

@@ -37,27 +37,26 @@ void Response::set_protocol(const std::string &protocol)
 	_protocol = protocol;
 }
 
-// Imposta il codice di stato della risposta
+// stato della risposta
 void Response::set_status(int status_code)
 {
 	// Usa std::stringstream per convertire status_code in stringa
 	std::stringstream ss;
 	ss << status_code;
-	_status_code = ss.str(); // Converte il codice di stato in stringa
+	_status_code = ss.str();
 
-	_status = status_text(status_code); // Imposta il messaggio di stato basato sul codice di stato
+	_status = status_text(status_code);
 }
 
-// Imposta un'intestazione nella risposta
+// intestazione nella risposta
 void Response::set_header(const std::string &key, const std::string &value)
 {
-	_headers[key] = value; // Imposta l'intestazione nella mappa dei headers
+	_headers[key] = value;
 }
 
-// Imposta il corpo della risposta
 void Response::set_body(const std::string &body)
 {
-	_body = body; // Imposta il corpo della risposta
+	_body = body;
 }
 
 
@@ -66,9 +65,7 @@ void Response::set_body(const std::string &body)
 char *Response::c_str() const
 {
 	std::ostringstream response;
-	// Costruisce la linea di stato nella forma "HTTP/1.1 200 OK"
 	response << _protocol << " " << _status_code << " " << _status << "\r\n";
-	// Aggiunge tutte le intestazioni alla risposta
 	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 	{
 		response << it->first << ": " << it->second << "\r\n";
@@ -107,13 +104,10 @@ size_t Response::length() const
 
 
 // Prepara la risposta HTTP in base alla richiesta
-void Response::prepare_response(const Request &request)
+void Response::prepare_response(int method, std::string path)
 {
-	std::string method = request.get_method(); // Ottiene il metodo della richiesta
-	std::string path = request.get_path();	   // Ottiene il percorso della richiesta
-
 	// Gestione della richiesta GET
-	if (method == "GET")
+	if (method == GET)
 	{
 		std::ifstream file(path.c_str());
 		if (!file.is_open())
@@ -124,18 +118,18 @@ void Response::prepare_response(const Request &request)
 		else
 		{
 			std::stringstream buffer;
-			buffer << file.rdbuf(); // Legge il contenuto del file
+			buffer << file.rdbuf(); // Leggo il contenuto del file
 			_body = buffer.str();
 			set_status(STATUS_OK);
 		}
 	}
-	else if (method == "POST")
+	else if (method == POST)
 	{
-		// Gestione della richiesta POST (es. scrittura su file, database, ecc.)
+		// Gestione della richiesta POST (es. scrittura su file)
 		_body = "<html><body><h1>POST Request Handled</h1></body></html>";
 		set_status(STATUS_OK);
 	}
-	else if (method == "DELETE")
+	else if (method == DELETE)
 	{
 		if (remove(path.c_str()) != 0)
 		{ // Se il file non viene trovato
@@ -156,6 +150,6 @@ void Response::prepare_response(const Request &request)
 	}
 
 	// Imposta le intestazioni Content-Length e Content-Type
-	set_header("Content-Length", std::to_string(_body.length()));
 	set_header("Content-Type", "text/html");
+	set_header("Content-Length", std::to_string(_body.length()));
 }

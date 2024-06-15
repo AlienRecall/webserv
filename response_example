@@ -1,0 +1,19 @@
+HTTP/1.1 200 OK 										//linea di stato
+
+														//intestazioni
+Date: Sat, 15 Jun 2024 12:00:00 GMT
+Server: Apache/2.4.41 (Ubuntu)
+Last-Modified: Sat, 15 Jun 2024 11:00:00 GMT
+Content-Type: text/html
+Content-Length: 138
+
+														//body
+<html>
+<head>
+    <title>Example</title>
+</head>
+<body>
+    <h1>Example Page</h1>
+    <p>This is an example page served by the web server.</p>
+</body>
+</html>

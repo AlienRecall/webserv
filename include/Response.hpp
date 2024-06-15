@@ -10,6 +10,8 @@
 #define STATUS_FOUND 302        // Definizione del codice di stato 302 (Found)
 #define STATUS_UNAUTHORIZED 401 // Definizione del codice di stato 401 (Unauthorized)
 #define STATUS_FORBIDDEN 403    // Definizione del codice di stato 403 (Forbidden)
+#define STATUS_NOT_FOUND 404
+#define STATUS_METHOD_NOT_ALLOWED 405
 
 class Response
 {
@@ -26,7 +28,7 @@ public:
   Response();  // Costruttore della classe Response
   ~Response(); // Distruttore della classe Response
 
-  void prepare_response(const Request &request);
+  void prepare_response(int method, std::string path);
   void set_protocol(const std::string &protocol); // Metodo per impostare il protocollo HTTP
   void set_status(int);                                      // Metodo per impostare il codice di stato
   void set_header(const std::string &, const std::string &); // Metodo per impostare un'intestazione
