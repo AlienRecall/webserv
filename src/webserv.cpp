@@ -1,20 +1,5 @@
 #include "../include/webserv.hpp"
 
-void set_fd_non_blocking(int sockfd) {
-    int flags = fcntl(sockfd, F_GETFL, 0);
-    if (flags == -1)
-        exit(EXIT_FAILURE);
-    flags |= O_NONBLOCK;
-    if (fcntl(sockfd, F_SETFL, flags) == -1)
-        exit(EXIT_FAILURE);
-}
-
-std::string uitoa(unsigned int v) {
-    std::stringstream s;
-    s << v;
-    return s.str();
-}
-
 int add_epoll(int epoll_fd, int fd) {
     struct epoll_event event;
     event.data.fd = fd;
@@ -26,9 +11,9 @@ int add_epoll(int epoll_fd, int fd) {
 }
 
 int handle_client(int client_fd, t_webserv *w) {
+    Request req;
     int err, bytesRead;
     char buffer[BUFFER_SIZE + 1];
-    Request req;
 
     while ((bytesRead = read(client_fd, buffer, BUFFER_SIZE)) == -1) {
         continue;

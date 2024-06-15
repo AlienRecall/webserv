@@ -97,7 +97,7 @@ int Request::parseHeaders(std::stringstream &buffer) {
 int Request::parseBody(std::stringstream &buffer, int client_fd) {
     if (_method == GET)
         return OK;
-    std::map<std::string, std::string>::iterator it = _headers.find("content-length");
+    Request::iterator it = _headers.find("content-length");
     if (it == _headers.end()) {
         it = _headers.find("Content-Length");
         if (it == _headers.end())
