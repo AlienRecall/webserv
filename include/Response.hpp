@@ -29,12 +29,12 @@ public:
   ~Response(); // Distruttore della classe Response
 
   void prepare_response(int method, std::string path);
-  void set_protocol(const std::string &protocol); // Metodo per impostare il protocollo HTTP
-  void set_status(int);                                      // Metodo per impostare il codice di stato
-  void set_header(const std::string &, const std::string &); // Metodo per impostare un'intestazione
-  void set_body(const std::string &);                        // Metodo per impostare il corpo della risposta
+  void set_protocol(const std::string &protocol); // protocollo HTTP
+  void set_status(int);                                      // codice di stato
+  void set_header(const std::string &, const std::string &); // intestazione
+  void set_body(const std::string &);                        // corpo della risposta
   char *c_str() const;                                       // Metodo per ottenere la risposta come stringa C
-  size_t length() const;
+  size_t length() const;                                      // calcolare la lunghezza di tutto quello che c'è da passare
 };
 
 #endif

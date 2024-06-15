@@ -1,6 +1,4 @@
 #include "../include/Response.hpp"
-#include "../include/Request.hpp"
-#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -28,7 +26,7 @@ std::string Response::status_text(int status_code)
 		return "Unauthorized";
 	if (status_code == STATUS_FORBIDDEN)
 		return "Forbidden";
-	return "Internal Server Error"; // Messaggio di default se il codice di stato non è riconosciuto
+	return "Internal Server Error";
 }
 
 // Imposta il protocollo HTTP della risposta
@@ -70,37 +68,27 @@ char *Response::c_str() const
 	{
 		response << it->first << ": " << it->second << "\r\n";
 	}
-	response << "\r\n"; // Aggiunge una riga vuota tra le intestazioni e il corpo della risposta
-	response << _body;	// Aggiunge il corpo della risposta
-
-	std::string res_str = response.str(); // Converte stringstream in stringa C++
+	response << "\r\n";
+	response << _body;
+	std::string res_str = response.str();
 	char *res_cstr = new char[res_str.size() + 1];
-	std::copy(res_str.begin(), res_str.end(), res_cstr); // Copia la stringa C++ nella stringa C
+	std::copy(res_str.begin(), res_str.end(), res_cstr);
 	res_cstr[res_str.size()] = '\0';
-	return res_cstr; // Restituisce la stringa C
+	return res_cstr;
 }
 
 // Calcola la lunghezza della risposta completa
 size_t Response::length() const
 {
 	std::ostringstream response;
-	// Costruisce la linea di stato nella forma "HTTP/1.1 200 OK"
 	response << _protocol << " " << _status_code << " " << _status << "\r\n";
-	// Aggiunge tutte le intestazioni alla risposta
 	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
 	{
 		response << it->first << ": " << it->second << "\r\n";
 	}
-	response << "\r\n"
-			 << _body;				// Aggiunge una riga vuota e il corpo della risposta
-	return response.str().length(); // Restituisce la lunghezza della risposta completa
+	response << "\r\n" << _body;
+	return response.str().length();
 }
-
-
-
-
-
-
 
 
 // Prepara la risposta HTTP in base alla richiesta
@@ -120,6 +108,7 @@ void Response::prepare_response(int method, std::string path)
 			std::stringstream buffer;
 			buffer << file.rdbuf(); // Leggo il contenuto del file
 			_body = buffer.str();
+			// _body = "<html><body><h1>miao</h1></body></html>";
 			set_status(STATUS_OK);
 		}
 	}
