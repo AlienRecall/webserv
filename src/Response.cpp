@@ -150,6 +150,8 @@ void Response::prepare_response(int method, std::string path)
 	}
 
 	// Imposta le intestazioni Content-Length e Content-Type
+	std::ostringstream oss;
+	oss << _body.length();
+	set_header("Content-Length", oss.str());
 	set_header("Content-Type", "text/html");
-	set_header("Content-Length", std::to_string(_body.length()));
 }
