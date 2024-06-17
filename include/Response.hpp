@@ -4,8 +4,11 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include <map>
+#include <sstream>
 #include <string>
 #include <utility>
+
+#define PROTOCOL_11 "HTTP/1.1"
 
 #define STATUS_OK 200
 #define STATUS_CREATED 201
@@ -21,28 +24,40 @@
 #define STATUS_NOT_IMPLEMENTED 501
 #define STATUS_BAD_GATEWAY 502
 
-class Response
-{
-private:
-  std::string _protocol;                       // Stringa per il protocollo HTTP
-  std::string _status_code;                    // Stringa per il codice di stato
-  std::string _status;                         // Stringa per il messaggio di stato
-  std::map<std::string, std::string> _headers; // Mappa per gli headers della risposta
-  std::string _body;                           // Stringa per il corpo della risposta
+class Response {
+  private:
+    std::string _protocol;                       // Stringa per il protocollo HTTP
+    std::string _status_code;                    // Stringa per il codice di stato
+    std::string _status;                         // Stringa per il messaggio di stato
+    std::map<std::string, std::string> _headers; // Mappa per gli headers della risposta
+    std::string _body;                           // Stringa per il corpo della risposta
 
-  std::string status_text(int); // Metodo per ottenere il messaggio di stato
+    std::string status_text(int); // Metodo per ottenere il messaggio di stato
 
-public:
-  Response();
-  ~Response();
+    void add_default_headers();
 
-  void prepare_response(int method, std::string path);
-  void set_protocol(const std::string &protocol); // protocollo HTTP
-  void set_status(int);                                      // codice di stato
-  void set_header(const std::string &, const std::string &); // intestazione
-  void set_body(const std::string &);                        // corpo della risposta
-  char *c_str() const;                                       // Metodo per ottenere la risposta come stringa C
-  size_t length() const;                                      // calcolare la lunghezza di tutto quello che c'è da passare
+    // methods to prepare the response
+    void make_404();
+    void make_405();
+    void make_302();
+
+  public:
+    Response();
+    ~Response();
+
+    static std::string itoa(int nbr) {
+        std::stringstream ss;
+        ss << nbr;
+        return ss.str();
+    };
+
+    void prepare_response(Request &, Server *);
+    void set_protocol(const std::string &protocol);            // protocollo HTTP
+    void set_status(int);                                      // codice di stato
+    void set_header(const std::string &, const std::string &); // intestazione
+    void set_body(const std::string &);                        // corpo della risposta
+    char *c_str() const;   // Metodo per ottenere la risposta come stringa C
+    size_t length() const; // calcolare la lunghezza di tutto quello che c'è da passare
 };
 
 #endif

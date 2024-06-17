@@ -24,20 +24,28 @@ int handle_client(int client_fd, t_webserv *w) {
     }
     buffer[bytesRead] = 0;
     std::cout << buffer << std::endl;
-    err = req.popRequest(buffer, client_fd);
+    err = req.popRequest(buffer, client_fd, w->_ptr->get_client_body_size());
     if (err != OK) {
         close(client_fd);
         return err;
     }
-    Response res;                                                  // Istanza della classe Response per generare la risposta HTTP
-    res.prepare_response(req, w->_ptr);                                     // Prepara la risposta in base alla richiesta analizzata
-    char *response_str = res.c_str();                              // Converte la risposta in una stringa C
-    write(client_fd, response_str, res.length());                   // Scrive la risposta al client
-    delete[] response_str;                                         // Dealloca la memoria allocata per la stringa di risposta
+    Response res; // Istanza della classe Response per generare la risposta HTTP
+    res.prepare_response(
+        req, w->_ptr); // Prepara la risposta in base alla richiesta analizzata
+    char *response_str = res.c_str(); // Converte la risposta in una stringa C
+    if (!response_str) {
+        std::cout << "chudo client (no response)" << std::endl;
+        close(client_fd);
+        return CUSTOM;
+    }
+
+    write(client_fd, response_str, res.length()); // Scrive la risposta al client
+    delete[] response_str; // Dealloca la memoria allocata per la stringa di risposta
     if (bytesRead == 0) {
         close(client_fd);
         return CUSTOM;
     }
+
     close(client_fd);
     return OK;
 }

@@ -2,11 +2,10 @@
 
 RouteConfig::RouteConfig() {
     _allowed_methods = 0;
-    _client_body_size = 0;
     _redirect = "";
     _root = "";
     _index = "";
-    _dir_listing = false;
+    _dir_listing = -1;
     _upload_location = "";
 }
 
@@ -18,14 +17,12 @@ RouteConfig &RouteConfig::operator=(const RouteConfig &rc) {
     if (this == &rc)
         return *this;
     _allowed_methods = rc._allowed_methods;
-    _client_body_size = rc._client_body_size;
     _redirect = rc._redirect;
     _root = rc._root;
     _index = rc._index;
     _dir_listing = rc._dir_listing;
-    _cgi_extensions = rc._cgi_extensions;
     _upload_location = rc._upload_location;
-    _error_pages = rc._error_pages;
+    _cgi_extensions = rc._cgi_extensions;
     return *this;
 }
 
@@ -53,7 +50,9 @@ void RouteConfig::set_allowed_methods(std::string &methods) {
     }
 }
 
-void RouteConfig::set_client_body_size(unsigned int v) { _client_body_size = v; }
+void RouteConfig::must_set_allowed_method(unsigned int method) {
+    _allowed_methods = method;
+}
 
 void RouteConfig::set_redirect(const std::string &v) { _redirect = v; }
 
@@ -62,9 +61,10 @@ void RouteConfig::set_root(const std::string &v) { _root = v; }
 void RouteConfig::set_index(const std::string &v) { _index = v; }
 
 void RouteConfig::set_dir_listing(const std::string &v) {
-    _dir_listing = false;
     if (v == "on")
-        _dir_listing = true;
+        _dir_listing = 1;
+    else
+        _dir_listing = 0;
 }
 
 void RouteConfig::set_cgi_ext(std::string &cgi_exts) {
@@ -82,33 +82,7 @@ void RouteConfig::set_cgi_ext(std::string &cgi_exts) {
 
 void RouteConfig::set_upload_location(const std::string &v) { _upload_location = v; }
 
-void RouteConfig::set_error_page(const std::string &s, const std::string &p) {
-    unsigned int status = std::atoi(s.c_str());
-    if (status == 0)
-        return;
-    _error_pages[status] = p;
-}
-
-void RouteConfig::set_error_pages(std::string &error_pages) {
-    size_t pos = error_pages.find_last_of(' ');
-    if (pos == std::string::npos)
-        return;
-    std::string page = error_pages.substr(pos + 1);
-    error_pages.erase(pos);
-    std::string token;
-    while ((pos = error_pages.find_first_of("	 ")) != std::string::npos) {
-        token = error_pages.substr(0, pos);
-        set_error_page(token, page);
-        error_pages.erase(0, pos + 1);
-    }
-    if (!error_pages.empty()) {
-        set_error_page(error_pages, page);
-    }
-}
-
 int RouteConfig::get_allowed_methods() const { return _allowed_methods; }
-
-unsigned int RouteConfig::get_client_body_size() const { return _client_body_size; }
 
 std::string RouteConfig::get_redirect() const { return _redirect; }
 
@@ -116,18 +90,9 @@ std::string RouteConfig::get_root() const { return _root; }
 
 std::string RouteConfig::get_index() const { return _index; }
 
-bool RouteConfig::get_dir_listing() const { return _dir_listing; }
-
-std::list<std::string> RouteConfig::get_cgi_ext() const { return _cgi_extensions; }
+int RouteConfig::get_dir_listing() const { return _dir_listing; }
 
 std::string RouteConfig::get_upload_location() const { return _upload_location; }
-
-std::string RouteConfig::get_error_page(unsigned int status) {
-    error_pages_iterator it = _error_pages.find(status);
-    if (it != _error_pages.end())
-        return it->second;
-    return "";
-}
 
 std::ostream &operator<<(std::ostream &os, RouteConfig &conf) {
     int am = conf.get_allowed_methods();
@@ -140,34 +105,22 @@ std::ostream &operator<<(std::ostream &os, RouteConfig &conf) {
         }
         os << std::endl;
     }
-    if (conf.get_client_body_size() != 0)
-        os << "	client body size: " << conf.get_client_body_size() << std::endl;
-    ;
     if (conf.get_redirect() != "")
         os << "	redirect: " << conf.get_redirect() << std::endl;
-    ;
     if (conf.get_root() != "")
         os << "	root: " << conf.get_root() << std::endl;
-    ;
     if (conf.get_index() != "")
         os << "	index: " << conf.get_index() << std::endl;
-    ;
     os << "	is directory listing set: " << conf.get_dir_listing() << std::endl;
-    ;
-    std::list<std::string> l = conf.get_cgi_ext();
-    if (!l.empty()) {
+    if (conf.cgi_ext_size() > 0) {
         os << "	cgi extensions: ";
-        for (std::list<std::string>::iterator it = l.begin(); it != l.end(); it++) {
+        for (RouteConfig::cgi_ext_iterator it = conf.cgi_ext_begin();
+             it != conf.cgi_ext_end(); it++) {
             os << *it << " ";
         }
         os << std::endl;
     }
     if (conf.get_upload_location() != "")
         os << "	upload location: " << conf.get_upload_location() << std::endl;
-    for (RouteConfig::error_pages_iterator it = conf.error_pages_begin();
-         it != conf.error_pages_end(); it++) {
-        os << "	error page for status `" << it->first << "` is: " << it->second
-           << std::endl;
-    }
     return os;
 }

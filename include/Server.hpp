@@ -13,6 +13,8 @@
 #define MAX_EVENTS 10
 #define MAX_CLIENTS 10
 
+#define MAX_CLIENT_BODY_SIZE 1048576
+
 class Server {
   private:
     int _fd;
@@ -27,16 +29,10 @@ class Server {
 
     void close_fd();
     int get_fd() const;
+    unsigned int get_client_body_size() const;
     Config *get_config();
     Error open_socket();
-    Error get_path_rules(std::string &, RouteConfig &){
-        // trovo la path nelle locations?
-        // si: scrive le rules su il config passato come paramentro
-
-        // taglia la path
-        // se trova un'altro path si richiama se stesso
-        // fine
-    };
+    void get_path_config(std::string, RouteConfig &);
 };
 
 #endif

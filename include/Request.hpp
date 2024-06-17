@@ -10,11 +10,13 @@
 #include <string>
 #include <unistd.h>
 
-#define ERROR_GETTING_METHOD 900
-#define ERROR_GETTING_PATH 909
-#define ERROR_GETTING_PROTOCOL 999
-#define ERROR_GETTING_HEADERS 990
-#define ERROR_GETTING_BODY 9990
+#define ERROR_GETTING_METHOD 111
+#define ERROR_GETTING_PATH 222
+#define ERROR_GETTING_PROTOCOL 333
+#define ERROR_GETTING_HEADERS 444
+#define ERROR_GETTING_BODY 555
+#define ERROR_READ_CONTENT_DIFF 666
+#define MAX_CLIENT_BODY_SIZE_EXCEEDED 777
 
 class Request {
   private:
@@ -24,24 +26,26 @@ class Request {
     std::map<std::string, std::string> _headers;
     std::string _body;
 
+    int parseMethod(std::stringstream &);
+    int parsePath(std::stringstream &);
+    int parseProtocol(std::stringstream &);
+    int parseHeaders(std::stringstream &);
+    int parseBody(std::stringstream &, int, int);
+
   public:
     Request();
     ~Request();
 
     typedef std::map<std::string, std::string>::iterator iterator;
+    typedef std::map<std::string, std::string>::const_iterator const_iterator;
 
-    int get_method();
+    int get_method() const;
     std::string &get_path();
-    std::string &get_protocol();
+    const std::string &get_protocol() const;
     iterator get_header(const std::string &);
-    std::string &get_body();
+    const std::string &get_body() const;
 
-    int popRequest(char *buffer, int client_request);
-    int parseMethod(std::stringstream &buffer);
-    int parsePath(std::stringstream &buffer);
-    int parseProtocol(std::stringstream &buffer);
-    int parseHeaders(std::stringstream &buffer);
-    int parseBody(std::stringstream &buffer, int ClientFd);
+    int popRequest(char *, int, unsigned int);
 };
 
 #endif

@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
             // if (err != OK) {
             //     return 1;
             // }
+
             s.open_socket();
             w.sm.push_server(s);
         }

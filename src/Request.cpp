@@ -7,15 +7,15 @@ Request::Request() {
 
 Request::~Request() {}
 
-int Request::get_method() { return _method; }
+int Request::get_method() const { return _method; }
 
 std::string &Request::get_path() { return _path; }
 
-std::string &Request::get_protocol() { return _protocol; }
+const std::string &Request::get_protocol() const { return _protocol; }
 
 Request::iterator Request::get_header(const std::string &k) { return _headers.find(k); }
 
-std::string &Request::get_body() { return _body; }
+const std::string &Request::get_body() const { return _body; }
 
 int Request::parseMethod(std::stringstream &buffer) {
     std::string buff;
@@ -47,6 +47,9 @@ int Request::parsePath(std::stringstream &buffer) {
     buffer >> buff;
     if (buff[0] != '/')
         return ERROR_GETTING_PATH;
+    size_t size = buff.size();
+    if (buff[size - 1] == '/')
+        buff.substr(0, size - 1);
     _path = buff;
     return OK;
 }
@@ -94,7 +97,7 @@ int Request::parseHeaders(std::stringstream &buffer) {
     return OK;
 }
 
-int Request::parseBody(std::stringstream &buffer, int client_fd) {
+int Request::parseBody(std::stringstream &buffer, int client_fd, int mbs) {
     if (_method == GET)
         return OK;
     Request::iterator it = _headers.find("content-length");
@@ -106,6 +109,10 @@ int Request::parseBody(std::stringstream &buffer, int client_fd) {
     buffer >> _body;
     int read_body = _body.length();
     int content_len = std::atoi(it->second.c_str());
+    if (content_len > mbs)
+        return MAX_CLIENT_BODY_SIZE_EXCEEDED;
+    if (read_body > content_len)
+        return ERROR_READ_CONTENT_DIFF;
     if (read_body == content_len)
         return OK;
 
@@ -117,18 +124,18 @@ int Request::parseBody(std::stringstream &buffer, int client_fd) {
     return OK;
 }
 
-int Request::popRequest(char *buf, int client_fd) {
+int Request::popRequest(char *buf, int client_fd, unsigned int mbs) {
     std::string buffer = buf;
     std::stringstream newBuffer(buffer);
-    if (parseMethod(newBuffer) == ERROR_GETTING_METHOD)
+    if (parseMethod(newBuffer) != OK)
         return (ERROR_GETTING_METHOD);
-    if (parsePath(newBuffer) == ERROR_GETTING_PATH)
+    if (parsePath(newBuffer) != OK)
         return (ERROR_GETTING_PATH);
-    if (parseProtocol(newBuffer) == ERROR_GETTING_PROTOCOL)
+    if (parseProtocol(newBuffer) != OK)
         return (ERROR_GETTING_PROTOCOL);
-    if (parseHeaders(newBuffer) == ERROR_GETTING_HEADERS)
+    if (parseHeaders(newBuffer) != OK)
         return (ERROR_GETTING_HEADERS);
-    if (parseBody(newBuffer, client_fd) == ERROR_GETTING_BODY)
+    if (parseBody(newBuffer, client_fd, mbs) != OK)
         return (ERROR_GETTING_BODY);
     return OK;
 }

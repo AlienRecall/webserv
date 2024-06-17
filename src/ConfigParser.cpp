@@ -35,6 +35,12 @@ Error ConfigParser::populate_config(Config &conf) {
     case 2:
         conf.set_port(_value);
         break;
+    case 3:
+        conf.set_error_pages(_value);
+        break;
+    case 4:
+        conf.set_client_body_size(std::atoi(_value.c_str()));
+        break;
     }
     return OK;
 }
@@ -43,12 +49,6 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
     // std::cout << "populating key_type: " << _key_type << ", with value: " <<
     // _value << std::endl;
     switch (_key_type) {
-    case 3:
-        conf.set_error_pages(_value);
-        break;
-    case 4:
-        conf.set_client_body_size(std::atoi(_value.c_str()));
-        break;
     case 5:
         conf.set_index(_value);
         break;
@@ -161,7 +161,7 @@ Error ConfigParser::parse_segment(std::ifstream &file, RouteConfig *rc,
             if (err != OK)
                 return err;
         } else if (route.empty()) {
-            if (_key_type < 3)
+            if (_key_type < 5)
                 populate_config(*_actual);
             else
                 populate_route_config(*_actual);
