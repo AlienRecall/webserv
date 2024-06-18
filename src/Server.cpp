@@ -63,8 +63,8 @@ void Server::get_path_config(std::string path, RouteConfig &config) {
             config.must_set_allowed_method(ptr->get_allowed_methods());
         if (config.get_redirect() == "" && ptr->get_redirect() != "")
             config.set_redirect(ptr->get_redirect());
-        if (config.get_index() == "" && ptr->get_index() != "")
-            config.set_index(ptr->get_index());
+        if (config.get_index() == "")
+            config.set_index(ptr->get_index() == "" ? "no-index" : ptr->get_index());
         if (config.get_dir_listing() == -1 && ptr->get_dir_listing() != -1)
             config.set_dir_listing(ptr->get_dir_listing() ? "on" : "off");
         if (ptr->cgi_ext_size() > 0) {

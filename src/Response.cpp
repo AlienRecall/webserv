@@ -9,6 +9,8 @@ Response::Response() {
     _status_code = "200";   // Imposta il codice di stato di default a 200 (OK)
     _status = "OK";         // Imposta il messaggio di stato di default
     _body = "";
+    _buffer = 0;
+    _size = 0;
 }
 
 // Distruttore della classe Response
@@ -48,9 +50,12 @@ void Response::set_header(const std::string &key, const std::string &value) {
 void Response::set_body(const std::string &body) { _body = body; }
 
 // Converte la risposta in una stringa C per essere inviata al client
-char *Response::c_str() const {
+char *Response::c_str() {
     if (_protocol == "")
         return 0;
+    if (_buffer)
+        delete _buffer;
+
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
     for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
@@ -60,14 +65,18 @@ char *Response::c_str() const {
     response << "\r\n";
     response << _body;
     std::string res_str = response.str();
-    char *res_cstr = new char[res_str.size() + 1];
-    std::copy(res_str.begin(), res_str.end(), res_cstr);
-    res_cstr[res_str.size()] = '\0';
-    return res_cstr;
+
+    _size = res_str.size();
+    _buffer = new char[_size + 1];
+    _buffer[_size] = 0;
+    std::copy(res_str.begin(), res_str.end(), _buffer);
+    return _buffer;
 }
 
 // Calcola la lunghezza della risposta completa
 size_t Response::length() const {
+    if (_buffer)
+        return _size;
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
     for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
@@ -91,6 +100,14 @@ void Response::make_405() {
     add_default_headers();
 }
 
+void Response::make_302(const std::string &loc) {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_FOUND);
+    set_header("Location", loc);
+
+    add_default_headers();
+}
+
 // Prepara la risposta HTTP in base alla richiesta
 void Response::prepare_response(Request &req, Server *server) {
     Error err;
@@ -104,8 +121,8 @@ void Response::prepare_response(Request &req, Server *server) {
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405(); // return 405 method not allowed
 
-    //  check body size
+    if (route_config.get_redirect() != "")
+        return make_302(route_config.get_redirect());
 
     // checkiamo se la location/server ha una root dir
-    // check se ha una redirect
 }

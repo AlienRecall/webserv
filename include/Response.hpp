@@ -32,6 +32,9 @@ class Response {
     std::map<std::string, std::string> _headers; // Mappa per gli headers della risposta
     std::string _body;                           // Stringa per il corpo della risposta
 
+    char *_buffer;
+    size_t _size;
+
     std::string status_text(int); // Metodo per ottenere il messaggio di stato
 
     void add_default_headers();
@@ -39,7 +42,7 @@ class Response {
     // methods to prepare the response
     void make_404();
     void make_405();
-    void make_302();
+    void make_302(const std::string &);
 
   public:
     Response();
@@ -56,7 +59,7 @@ class Response {
     void set_status(int);                                      // codice di stato
     void set_header(const std::string &, const std::string &); // intestazione
     void set_body(const std::string &);                        // corpo della risposta
-    char *c_str() const;   // Metodo per ottenere la risposta come stringa C
+    char *c_str();         // Metodo per ottenere la risposta come stringa C
     size_t length() const; // calcolare la lunghezza di tutto quello che c'è da passare
 };
 

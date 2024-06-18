@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
                 handle_client(fd, &w);
             }
         }
-        // usleep(1000);
     }
     close(epoll_fd);
 }
