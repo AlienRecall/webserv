@@ -1,3 +1,4 @@
+#include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
 #include <fstream>
 #include <iostream>
@@ -18,15 +19,18 @@ Response::~Response() {}
 
 // Restituisce il testo associato a un codice di stato HTTP
 std::string Response::status_text(int status_code) {
-    if (status_code == STATUS_OK)
+    switch (status_code) {
+    case STATUS_OK:
         return "OK";
-    if (status_code == STATUS_FOUND)
+    case STATUS_FOUND:
         return "Found";
-    if (status_code == STATUS_UNAUTHORIZED)
+    case STATUS_UNAUTHORIZED:
         return "Unauthorized";
-    if (status_code == STATUS_FORBIDDEN)
+    case STATUS_FORBIDDEN:
         return "Forbidden";
-    return "Internal Server Error";
+    default:
+        return "Internal Server Error";
+    }
 }
 
 // Imposta il protocollo HTTP della risposta
@@ -96,16 +100,16 @@ void Response::add_default_headers() {
 void Response::make_405() {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_METHOD_NOT_ALLOWED);
-
     add_default_headers();
+    set_body(Pages::get_405());
 }
 
 void Response::make_302(const std::string &loc) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_FOUND);
     set_header("Location", loc);
-
     add_default_headers();
+    set_body(Pages::get_302(loc));
 }
 
 // Prepara la risposta HTTP in base alla richiesta

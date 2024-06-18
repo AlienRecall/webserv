@@ -1,6 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#include "PagesCache.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <map>

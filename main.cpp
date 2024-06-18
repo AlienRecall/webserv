@@ -1,5 +1,6 @@
 #include "include/Config.hpp"
 #include "include/Logger.hpp"
+#include "include/PagesCache.hpp"
 #include "include/Server.hpp"
 #include "include/webserv.hpp"
 #include <cstring>
@@ -10,7 +11,10 @@
 #include <utility>
 #include <vector>
 
+std::map<const std::string, std::string> Pages::cache;
+
 int main(int argc, char *argv[]) {
+    Pages::init();
     Error err;
     t_webserv w;
     if (argc < 2 || argc > 3)
