@@ -187,7 +187,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
 
     argv[0] = (char *)cmd.c_str();
     /* apro il file con ACCESS */
-    std::cout << "quando qua dentro per capire se la path è corretta :" << path << std::endl;
+    // std::cout << "quando qua dentro per capire se la path è corretta :" << path << std::endl;
     if (access(path.c_str(), R_OK | X_OK) != -1)
     {
         int fd[2];
