@@ -1,8 +1,5 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 // Costruttore della classe Response
 Response::Response() {
@@ -10,7 +7,6 @@ Response::Response() {
     _status_code = "200";   // Imposta il codice di stato di default a 200 (OK)
     _status = "OK";         // Imposta il messaggio di stato di default
     _body = "";
-    _buffer = 0;
     _size = 0;
 }
 
@@ -53,12 +49,20 @@ void Response::set_header(const std::string &key, const std::string &value) {
 
 void Response::set_body(const std::string &body) { _body = body; }
 
+char *make_c_str(size_t _size, const std::string &data) {
+    char *str = new char[_size + 1];
+    str[_size] = 0;
+    std::copy(data.begin(), data.end(), str);
+    return str;
+}
+
 // Converte la risposta in una stringa C per essere inviata al client
 char *Response::c_str() {
-    if (_protocol == "")
+    if (_protocol == "" && !_body.empty()) {
+        _size = _body.size();
+        return make_c_str(_size, _body);
+    } else if (_body.empty())
         return 0;
-    if (_buffer)
-        delete _buffer;
 
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
@@ -71,15 +75,12 @@ char *Response::c_str() {
     std::string res_str = response.str();
 
     _size = res_str.size();
-    _buffer = new char[_size + 1];
-    _buffer[_size] = 0;
-    std::copy(res_str.begin(), res_str.end(), _buffer);
-    return _buffer;
+    return make_c_str(_size, res_str);
 }
 
 // Calcola la lunghezza della risposta completa
 size_t Response::length() const {
-    if (_buffer)
+    if (_size != 0)
         return _size;
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
@@ -100,16 +101,26 @@ void Response::add_default_headers() {
 void Response::make_405() {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_METHOD_NOT_ALLOWED);
-    add_default_headers();
     set_body(Pages::get_405());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
 }
 
 void Response::make_302(const std::string &loc) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_FOUND);
     set_header("Location", loc);
-    add_default_headers();
     set_body(Pages::get_302(loc));
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
+
+void Response::make_500() {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_INTERNAL_SERVER_ERROR);
+    set_body(Pages::get_500());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
 }
 
 // Prepara la risposta HTTP in base alla richiesta
@@ -123,10 +134,19 @@ void Response::prepare_response(Request &req, Server *server) {
 
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
-        return make_405(); // return 405 method not allowed
+        return make_405();
 
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
 
+    std::string path = route_config.get_root().empty()
+                           ? req.get_path()
+                           : route_config.get_root() + req.get_path();
+
+    if (route_config.get_dir_listing() == 1)
+        return make_autoindex(path);
+
     // checkiamo se la location/server ha una root dir
+
+    return make_500();
 }
