@@ -62,6 +62,7 @@
     void make_405();
     void make_302(const std::string &);
     void make_500();
+    void make_timeout();
 
   public:
     Response();
@@ -82,7 +83,7 @@
 
     void prepare_response(Request &, Server *);
     void handle_cgi_response(Request &req, Response *resp, int language);
-    void check_timer(int fd, pid_t pid);
+    bool check_timer(int fd, pid_t pid);
     };
 
 #endif

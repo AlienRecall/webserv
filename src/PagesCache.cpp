@@ -8,6 +8,7 @@ void Pages::init() {
     push("./assets/default_pages/404.html", "404");
     push("./assets/default_pages/405.html", "405");
     push("./assets/default_pages/500.html", "500");
+    push("./assets/default_pages/timeout.html", "timeout");
 }
 
 Error Pages::push(const std::string &path, std::string key) {
@@ -55,3 +56,6 @@ const std::string Pages::get_404() { return get("404"); }
 const std::string Pages::get_405() { return get("405"); }
 
 const std::string Pages::get_500() { return get("500"); }
+
+const std::string Pages::get_timeout() { return get("timeout"); }
+

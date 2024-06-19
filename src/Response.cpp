@@ -124,8 +124,16 @@ void Response::make_500() {
     add_default_headers();
 }
 
+void Response::make_timeout()
+{
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_INTERNAL_SERVER_ERROR);
+    set_body(Pages::get_timeout());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
 
-void Response::check_timer(int fd, pid_t pid)
+bool Response::check_timer(int fd, pid_t pid)
 {
     fd_set set;             // Insieme di file descriptor per `select`
     struct timeval timeout; // Struttura per impostare il timeout
@@ -142,16 +150,17 @@ void Response::check_timer(int fd, pid_t pid)
     if (value == -1) // Se `select` ritorna -1, c'è stato un errore
     {
         close(fd);
-        return;
+        return false;
     }
     else if (value == 0) // Se `select` ritorna 0, il timeout è stato raggiunto
     {
         std::cerr << "Timeout" << std::endl;
-        kill(pid, SIGKILL);    // Termina il processo figlio
-        waitpid(pid, NULL, 0); // Aspetta che il processo figlio termini
+        kill(pid, SIGKILL);
+        waitpid(pid, NULL, 0);
         close(fd);
-        return;
+        return false;
     }
+    return true;
 }
 
 /* funzione per la gestione della response della cgi */
@@ -210,11 +219,10 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
         else // parent process
         {
             close(fd[1]);
-            if (check_timer(fd[0], pid))
+            if (check_timer(fd[0], pid) == false)
             {
                 std::cout << "Process terminated due to timeout" << std::endl;
-                //qui da inserire una pagina con timeout
-                return;
+                return make_timeout(); 
             }
 
             char buffer[BUFFER_SIZE];
