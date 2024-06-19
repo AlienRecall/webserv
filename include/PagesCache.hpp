@@ -23,6 +23,7 @@ class Pages {
     static const std::string get_404();
     static const std::string get_405();
     static const std::string get_500();
+    static const std::string get_timeout();
 
     static Error push(const std::string &, std::string = "");
     static void init();

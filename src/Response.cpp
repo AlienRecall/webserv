@@ -17,15 +17,15 @@ Response::~Response() {}
 std::string Response::status_text(int status_code) {
     switch (status_code) {
     case STATUS_OK:
-        return "OK";
+        return ("OK");
     case STATUS_FOUND:
-        return "Found";
+        return ("Found");
     case STATUS_UNAUTHORIZED:
-        return "Unauthorized";
+        return ("Unauthorized");
     case STATUS_FORBIDDEN:
-        return "Forbidden";
+        return ("Forbidden");
     default:
-        return "Internal Server Error";
+        return ("Internal Server Error");
     }
 }
 
@@ -38,7 +38,6 @@ void Response::set_status(int status_code) {
     std::stringstream ss;
     ss << status_code;
     _status_code = ss.str();
-
     _status = status_text(status_code);
 }
 
@@ -50,20 +49,21 @@ void Response::set_header(const std::string &key, const std::string &value) {
 void Response::set_body(const std::string &body) { _body = body; }
 
 char *make_c_str(size_t _size, const std::string &data) {
-    char *str = new char[_size + 1];
+    char *str;
+
+    str = new char[_size + 1];
     str[_size] = 0;
     std::copy(data.begin(), data.end(), str);
-    return str;
+    return (str);
 }
 
 // Converte la risposta in una stringa C per essere inviata al client
 char *Response::c_str() {
     if (_protocol == "" && !_body.empty()) {
         _size = _body.size();
-        return make_c_str(_size, _body);
+        return (make_c_str(_size, _body));
     } else if (_body.empty())
-        return 0;
-
+        return (0);
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
     for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
@@ -73,15 +73,14 @@ char *Response::c_str() {
     response << "\r\n";
     response << _body;
     std::string res_str = response.str();
-
     _size = res_str.size();
-    return make_c_str(_size, res_str);
+    return (make_c_str(_size, res_str));
 }
 
 // Calcola la lunghezza della risposta completa
 size_t Response::length() const {
     if (_size != 0)
-        return _size;
+        return (_size);
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
     for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
@@ -89,7 +88,7 @@ size_t Response::length() const {
         response << it->first << ": " << it->second << "\r\n";
     }
     response << "\r\n" << _body;
-    return response.str().length();
+    return (response.str().length());
 }
 
 void Response::add_default_headers() {
@@ -123,38 +122,75 @@ void Response::make_500() {
     add_default_headers();
 }
 
+void Response::make_timeout() {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_INTERNAL_SERVER_ERROR);
+    set_body(Pages::get_timeout());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
+
+bool Response::check_timer(int fd, pid_t pid) {
+    fd_set set;             // Insieme di file descriptor per `select`
+    struct timeval timeout; // Struttura per impostare il timeout
+    // Imposta il timeout
+    timeout.tv_sec = TIMEOUT_SECONDS;
+    timeout.tv_usec = 0;
+    FD_ZERO(&set);    // Inizializza l'insieme di file descriptor
+    FD_SET(fd, &set); // Aggiunge il file descriptor della pipe all'insieme
+    // Usa `select` per aspettare fino a quando il file descriptor è pronto o il timeout
+    // scade
+    int value = select(fd + 1, &set, NULL, NULL,
+                       &timeout); // fd + 1 è il numero di file descriptor da monitorare
+    if (value == -1)
+    // Se `select` ritorna -1, c'è stato un errore
+    {
+        close(fd);
+        return (false);
+    } else if (value == 0) // Se `select` ritorna 0, il timeout è stato raggiunto
+    {
+        std::cerr << "Timeout" << std::endl;
+        kill(pid, SIGKILL);
+        waitpid(pid, NULL, 0);
+        close(fd);
+        return (false);
+    }
+    return (true);
+}
+
 /* funzione per la gestione della response della cgi */
 void Response::handle_cgi_response(Request &req, Response *resp, int language) {
     char *argv[3];
+    int fd[2];
+    int pid;
+    char buffer[BUFFER_SIZE];
+    int byteread;
+    int status;
+
     std::string path = req.get_path().substr(1);
     std::string cmd;
-
     if (language == PYTHON) {
         std::cout << "sono dentro python" << std::endl;
         argv[1] = (char *)path.c_str();
         argv[2] = NULL;
         cmd = "/usr/bin/python3";
-    }
-
-    else //(language == PHP)
+    } else //(language == PHP)
     {
         argv[1] = (char *)path.c_str();
         argv[2] = NULL;
         cmd = "/usr/bin/php";
     }
-
     argv[0] = (char *)cmd.c_str();
     /* apro il file con ACCESS */
-    std::cout << "quando qua dentro per capire se la path è corretta :" << path
-              << std::endl;
+    // std::cout << "quando qua dentro per capire se la path è corretta :" << path <<
+    // std::endl;
     if (access(path.c_str(), R_OK | X_OK) != -1) {
-        int fd[2];
         if (pipe(fd) == -1) {
             std::cout << ERROR_OPEN_PIPE << std::endl;
             return;
         }
         /* faccio il fork e lavoro il processo figlio */
-        int pid = fork();
+        pid = fork();
         if (pid == -1) {
             std::cout << ERROR_FORK << std::endl;
             return;
@@ -173,14 +209,15 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
         } else // parent process
         {
             close(fd[1]);
-            char buffer[BUFFER_SIZE];
+            if (check_timer(fd[0], pid) == false) {
+                std::cout << "Process terminated due to timeout" << std::endl;
+                return (make_timeout());
+            }
             std::string output;
-            int byteread;
             while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0) {
                 output.append(buffer, byteread);
             }
             close(fd[0]); // close dopo che ho finito di leggere
-            int status;
             waitpid(pid, &status, 0);
             std::cout << "questo è l'output" << output << std::endl;
             resp->set_body(output); // uscita dalla funzione dell'output
@@ -201,26 +238,20 @@ void Response::prepare_response(Request &req, Server *server) {
     server->get_path_config(req.get_path(), route_config);
     std::cout << route_config << std::endl;
     std::cout << req.get_body().size() << std::endl;
-
     if (req.get_path().find(".py") != std::string::npos)
-        return handle_cgi_response(req, this, PYTHON);
+        return (handle_cgi_response(req, this, PYTHON));
     if (req.get_path().find(".php") != std::string::npos)
         return handle_cgi_response(req, this, PHP);
-
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405();
-
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
-
     std::string path = route_config.get_root().empty()
                            ? req.get_path()
                            : route_config.get_root() + req.get_path();
-
     if (route_config.get_dir_listing() == 1)
         return make_autoindex(path);
-
     // checkiamo se la location/server ha una root dir
     return make_500();
 }
