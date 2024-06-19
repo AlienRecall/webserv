@@ -15,6 +15,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <utility>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 #define PROTOCOL_11 "HTTP/1.1"
@@ -32,6 +33,7 @@
 #define STATUS_INTERNAL_SERVER_ERROR 500
 #define STATUS_NOT_IMPLEMENTED 501
 #define STATUS_BAD_GATEWAY 502
+#define TIMEOUT_SECONDS 5 // Imposta il timeout
 
 #define PYTHON 0
 #define PHP 1
@@ -80,6 +82,7 @@
 
     void prepare_response(Request &, Server *);
     void handle_cgi_response(Request &req, Response *resp, int language);
-};
+    void check_timer(int fd, pid_t pid);
+    };
 
 #endif

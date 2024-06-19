@@ -124,6 +124,36 @@ void Response::make_500() {
     add_default_headers();
 }
 
+
+void Response::check_timer(int fd, pid_t pid)
+{
+    fd_set set;             // Insieme di file descriptor per `select`
+    struct timeval timeout; // Struttura per impostare il timeout
+
+    // Imposta il timeout
+    timeout.tv_sec = TIMEOUT_SECONDS;
+    timeout.tv_usec = 0;
+
+    FD_ZERO(&set);       // Inizializza l'insieme di file descriptor
+    FD_SET(fd, &set); // Aggiunge il file descriptor della pipe all'insieme
+
+    // Usa `select` per aspettare fino a quando il file descriptor è pronto o il timeout scade
+    int value = select(fd + 1, &set, NULL, NULL, &timeout); // fd + 1 è il numero di file descriptor da monitorare
+    if (value == -1) // Se `select` ritorna -1, c'è stato un errore
+    {
+        close(fd);
+        return;
+    }
+    else if (value == 0) // Se `select` ritorna 0, il timeout è stato raggiunto
+    {
+        std::cerr << "Timeout" << std::endl;
+        kill(pid, SIGKILL);    // Termina il processo figlio
+        waitpid(pid, NULL, 0); // Aspetta che il processo figlio termini
+        close(fd);
+        return;
+    }
+}
+
 /* funzione per la gestione della response della cgi */
 void Response::handle_cgi_response(Request &req, Response *resp, int language)
 {
@@ -180,9 +210,17 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
         else // parent process
         {
             close(fd[1]);
+            if (check_timer(fd[0], pid))
+            {
+                std::cout << "Process terminated due to timeout" << std::endl;
+                //qui da inserire una pagina con timeout
+                return;
+            }
+
             char buffer[BUFFER_SIZE];
             std::string output;
             int byteread;
+
             while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0)
             {
                 output.append(buffer, byteread);
@@ -235,3 +273,5 @@ void Response::prepare_response(Request &req, Server *server) {
 
     return make_500();
 }
+
+
