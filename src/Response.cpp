@@ -117,11 +117,12 @@ void Response::make_302(const std::string &loc) {
 void Response::handle_cgi_response(Request &req, Response *resp, int language)
 {
     char *argv[3];
-    std::string path = req.get_path();
+    std::string path = req.get_path().substr(1);
     std::string cmd;
 
     if (language == PYTHON)
     {
+        std::cout << "sono dentro python" << std::endl;
         argv[1] = (char *)path.c_str();
         argv[2] = NULL;
         cmd = "/usr/bin/python3";
@@ -136,7 +137,8 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
 
     argv[0] = (char *)cmd.c_str();
     /* apro il file con ACCESS */
-    if (access(("/" + path).c_str(), R_OK | X_OK) != -1)
+    std::cout << "quando qua dentro per capire se la path è corretta :" << path << std::endl;
+    if (access(path.c_str(), R_OK | X_OK) != -1)
     {
         int fd[2];
         if (pipe(fd) == -1)
@@ -194,9 +196,18 @@ void Response::prepare_response(Request &req, Server *server) {
     RouteConfig route_config;
 
     (void)err;
+    
     server->get_path_config(req.get_path(), route_config);
     std::cout << route_config << std::endl;
 
+    if (req.get_path().find(".py") != std::string::npos)
+    {
+        std::cout << "SONO QUI DENTRO CAZZOOOOOOOO FORZA ALBANIAAAAAA" << std::endl;
+        handle_cgi_response(req, this, PYTHON);
+    }
+    else if (req.get_path().find(".php") != std::string::npos)
+        handle_cgi_response(req, this, PHP);
+        
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405(); // return 405 method not allowed
@@ -204,9 +215,6 @@ void Response::prepare_response(Request &req, Server *server) {
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
 
-    if (req.get_path().find(".py") != std::string::npos)
-        handle_cgi_response(req, this, PYTHON);
-    else if (req.get_path().find(".php") != std::string::npos)
-        handle_cgi_response(req, this, PHP);
+    
     // checkiamo se la location/server ha una root dir
 }
