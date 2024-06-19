@@ -3,7 +3,9 @@ FROM ubuntu:latest
 RUN apt-get -y update && apt-get -y --no-install-recommends install \
     build-essential \
     g++ \
-    make
+    make \
+    python3 \
+    php
 
 COPY . /webserv_proj
 

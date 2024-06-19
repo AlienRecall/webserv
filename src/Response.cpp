@@ -114,7 +114,7 @@ void Response::make_302(const std::string &loc) {
 }
 
 /* funzione per la gestione della response della cgi */
-void handle_cgi_response(const Request req, Response *resp, int language)
+void Response::handle_cgi_response(Request &req, Response *resp, int language)
 {
     char *argv[3];
     std::string path = req.get_path();
@@ -170,14 +170,14 @@ void handle_cgi_response(const Request req, Response *resp, int language)
             char buffer[BUFFER_SIZE];
             std::string output;
             int byteread;
-            while (byteread = read(fd[0], buffer, BUFFER_SIZE) > 0)
+            while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0)
             {
                 output.append(buffer, byteread);
             }
             close(fd[0]); // close dopo che ho finito di leggere
             int status;
             waitpid(pid, &status, 0);
-            response.set_body(output); //uscita dalla funzione dell'output
+            resp->set_body(output); //uscita dalla funzione dell'output
             return;
         }
     }
@@ -205,8 +205,8 @@ void Response::prepare_response(Request &req, Server *server) {
         return make_302(route_config.get_redirect());
 
     if (req.get_path().find(".py") != std::string::npos)
-        handle_cgi_response(const req, this, PYTHON);
+        handle_cgi_response(req, this, PYTHON);
     else if (req.get_path().find(".php") != std::string::npos)
-        handle_cgi_response(const req, this, PHP);
+        handle_cgi_response(req, this, PHP);
     // checkiamo se la location/server ha una root dir
 }
