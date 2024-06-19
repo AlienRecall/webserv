@@ -1,5 +1,6 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
+#include "../include/cgi.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -127,6 +128,12 @@ void Response::prepare_response(Request &req, Server *server) {
 
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
+
+
+    
+    /* se la path è cgi entro dentro e gestisco la cgi. */ 
+    if (req.get_path().find(".py") != std::string::npos)
+        
 
     // checkiamo se la location/server ha una root dir
 }

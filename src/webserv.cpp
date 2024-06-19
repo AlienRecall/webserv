@@ -30,11 +30,10 @@ int handle_client(int client_fd, t_webserv *w) {
         return err;
     }
     Response res; // Istanza della classe Response per generare la risposta HTTP
-    res.prepare_response(
-        req, w->_ptr); // Prepara la risposta in base alla richiesta analizzata
+    res.prepare_response(req, w->_ptr); // Prepara la risposta in base alla richiesta analizzata
     char *response_str = res.c_str(); // Converte la risposta in una stringa C
     if (!response_str) {
-        std::cout << "chudo client (no response)" << std::endl;
+        std::cout << "chiudo client (no response)" << std::endl;
         close(client_fd);
         return CUSTOM;
     }
