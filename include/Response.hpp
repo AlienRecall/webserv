@@ -69,7 +69,7 @@ class Response {
     void set_body(const std::string &);                        // corpo della risposta
     char *c_str();         // Metodo per ottenere la risposta come stringa C
     size_t length() const; // calcolare la lunghezza di tutto quello che c'è da passare
-    void handle_cgi_response(Request req, Response *resp, int language);
+    void handle_cgi_response(const Request req, Response *resp, int language);
 };
 
 #endif

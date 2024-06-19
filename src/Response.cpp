@@ -114,7 +114,7 @@ void Response::make_302(const std::string &loc) {
 }
 
 /* funzione per la gestione della response della cgi */
-void handle_cgi_response(Request req, Response *resp, int language)
+void handle_cgi_response(const Request req, Response *resp, int language)
 {
     char *argv[3];
     std::string path = req.get_path();
@@ -157,17 +157,17 @@ void handle_cgi_response(Request req, Response *resp, int language)
             if (dup2(fd[1], STDOUT_FILENO) == -1)
             {
                 std::cout << ERROR_EXECVE << std::endl;
-                return;
+                exit(EXIT_FAILURE);
             }
             close(fd[1]); // unused
             execve(cmd.c_str(), argv, 0);
             std::cout << ERROR_EXECVE << std::endl;
-            return;
+            exit(EXIT_FAILURE);
         }
         else // parent process
         {
             close(fd[1]);
-            char buffer[BUFFER_SIZE/*  + 1 */];
+            char buffer[BUFFER_SIZE];
             std::string output;
             int byteread;
             while (byteread = read(fd[0], buffer, BUFFER_SIZE) > 0)
@@ -192,7 +192,6 @@ void handle_cgi_response(Request req, Response *resp, int language)
 void Response::prepare_response(Request &req, Server *server) {
     Error err;
     RouteConfig route_config;
-    Response resp;
 
     (void)err;
     server->get_path_config(req.get_path(), route_config);
@@ -205,10 +204,9 @@ void Response::prepare_response(Request &req, Server *server) {
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
 
-
     if (req.get_path().find(".py") != std::string::npos)
-        handle_cgi_response(req, &resp, PYTHON);
+        handle_cgi_response(const req, this, PYTHON);
     else if (req.get_path().find(".php") != std::string::npos)
-        handle_cgi_response(req, &resp, PHP);
+        handle_cgi_response(const req, this, PHP);
     // checkiamo se la location/server ha una root dir
 }
