@@ -13,7 +13,7 @@
 #define MAX_EVENTS 10
 #define MAX_CLIENTS 10
 
-#define MAX_CLIENT_BODY_SIZE 1048576
+#define MAX_CLIENT_BODY_SIZE 11048576 // will be changed
 
 class Server {
   private:

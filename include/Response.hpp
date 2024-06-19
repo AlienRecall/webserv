@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <string>
 #include <sys/stat.h>
-#include <utility>
 #include <sys/wait.h>
+#include <utility>
 
 #define PROTOCOL_11 "HTTP/1.1"
 
@@ -40,7 +40,7 @@
 #define ERROR_EXECVE "execve, not working, not working!"
 #define ERROR_FILE_NOT_ACCESS "file not accessible"
 
-    class Response {
+class Response {
   private:
     size_t _size;
     std::string _protocol;                       // Stringa per il protocollo HTTP
@@ -54,6 +54,7 @@
     void add_default_headers();
 
     void make_autoindex(const std::string &);
+    void handle_cgi_response(Request &req, Response *resp, int language);
 
     // methods to prepare the response
     void make_404();
@@ -79,7 +80,6 @@
     size_t length() const; // calcolare la lunghezza di tutto quello che c'è da passare
 
     void prepare_response(Request &, Server *);
-    void handle_cgi_response(Request &req, Response *resp, int language);
 };
 
 #endif

@@ -8,6 +8,8 @@
 #include <ostream>
 #include <string>
 
+#define BUFFER_SIZE 1024
+
 static std::string expected_methods[4] = {"GET", "POST", "DELETE", "PUT"};
 
 enum Methods {

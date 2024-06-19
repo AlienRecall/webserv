@@ -16,7 +16,7 @@ std::string direntry_to_html(std::string &name, struct stat *buf) {
     }
 
     return "<tr><td valign=top> <td><a href=" + name + ">" + name +
-           "</a><td align=right>" + last_mod + "<td align=right>" + size + " kB<td>";
+           "</a><td align=right>" + last_mod + "<td align=right>" + size + " KB<td>";
 }
 
 Error list_dir(const std::string &path, std::string &list) {

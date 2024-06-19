@@ -100,15 +100,23 @@ int Request::parseHeaders(std::stringstream &buffer) {
 int Request::parseBody(std::stringstream &buffer, int client_fd, int mbs) {
     if (_method == GET)
         return OK;
+
     Request::iterator it = _headers.find("content-length");
     if (it == _headers.end()) {
         it = _headers.find("Content-Length");
         if (it == _headers.end())
             return (ERROR_GETTING_BODY);
     }
-    buffer >> _body;
+
+    std::string str = buffer.str();
+    size_t pos = str.find("\r\n\r\n");
+    if (pos == std::string::npos)
+        return CUSTOM; // wtf!!!! (should never happen)
+
+    _body = str.substr(pos + 4);
     int read_body = _body.length();
     int content_len = std::atoi(it->second.c_str());
+    int r, diff = content_len - read_body;
     if (content_len > mbs)
         return MAX_CLIENT_BODY_SIZE_EXCEEDED;
     if (read_body > content_len)
@@ -116,10 +124,16 @@ int Request::parseBody(std::stringstream &buffer, int client_fd, int mbs) {
     if (read_body == content_len)
         return OK;
 
-    char buff[content_len - read_body + 1];
-    if (int r = read(client_fd, buff, content_len - read_body) != -1) {
+    char buff[BUFFER_SIZE + 1];
+    while (diff > 0) {
+        r = read(client_fd, buff, diff < BUFFER_SIZE ? diff : BUFFER_SIZE);
+        if (r == -1) {
+            continue;
+        } else if (r == 0)
+            break;
         buff[r] = 0;
-        _body.append(buff);
+        _body.append(buff, r);
+        diff -= r;
     }
     return OK;
 }

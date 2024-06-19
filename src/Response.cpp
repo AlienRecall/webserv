@@ -1,6 +1,5 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
-#include "../include/webserv.hpp"
 
 // Costruttore della classe Response
 Response::Response() {
@@ -125,14 +124,12 @@ void Response::make_500() {
 }
 
 /* funzione per la gestione della response della cgi */
-void Response::handle_cgi_response(Request &req, Response *resp, int language)
-{
+void Response::handle_cgi_response(Request &req, Response *resp, int language) {
     char *argv[3];
     std::string path = req.get_path().substr(1);
     std::string cmd;
 
-    if (language == PYTHON)
-    {
+    if (language == PYTHON) {
         std::cout << "sono dentro python" << std::endl;
         argv[1] = (char *)path.c_str();
         argv[2] = NULL;
@@ -148,27 +145,24 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
 
     argv[0] = (char *)cmd.c_str();
     /* apro il file con ACCESS */
-    std::cout << "quando qua dentro per capire se la path è corretta :" << path << std::endl;
-    if (access(path.c_str(), R_OK | X_OK) != -1)
-    {
+    std::cout << "quando qua dentro per capire se la path è corretta :" << path
+              << std::endl;
+    if (access(path.c_str(), R_OK | X_OK) != -1) {
         int fd[2];
-        if (pipe(fd) == -1)
-        {
+        if (pipe(fd) == -1) {
             std::cout << ERROR_OPEN_PIPE << std::endl;
             return;
         }
         /* faccio il fork e lavoro il processo figlio */
         int pid = fork();
-        if (pid == -1)
-        {
+        if (pid == -1) {
             std::cout << ERROR_FORK << std::endl;
             return;
         }
         if (pid == 0) // CHILD PROCESS
         {
             close(fd[0]); // unused
-            if (dup2(fd[1], STDOUT_FILENO) == -1)
-            {
+            if (dup2(fd[1], STDOUT_FILENO) == -1) {
                 std::cout << ERROR_EXECVE << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -176,15 +170,13 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
             execve(cmd.c_str(), argv, 0);
             std::cout << ERROR_EXECVE << std::endl;
             exit(EXIT_FAILURE);
-        }
-        else // parent process
+        } else // parent process
         {
             close(fd[1]);
             char buffer[BUFFER_SIZE];
             std::string output;
             int byteread;
-            while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0)
-            {
+            while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0) {
                 output.append(buffer, byteread);
             }
             close(fd[0]); // close dopo che ho finito di leggere
@@ -194,9 +186,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
             resp->set_body(output); // uscita dalla funzione dell'output
             return;
         }
-    }
-    else
-    {
+    } else {
         std::cout << ERROR_FILE_NOT_ACCESS << std::endl;
         return;
     }
@@ -208,15 +198,15 @@ void Response::prepare_response(Request &req, Server *server) {
     RouteConfig route_config;
 
     (void)err;
-    
     server->get_path_config(req.get_path(), route_config);
     std::cout << route_config << std::endl;
+    std::cout << req.get_body().size() << std::endl;
 
     if (req.get_path().find(".py") != std::string::npos)
-        return (handle_cgi_response(req, this, PYTHON));
+        return handle_cgi_response(req, this, PYTHON);
     if (req.get_path().find(".php") != std::string::npos)
-       return (handle_cgi_response(req, this, PHP));
-        
+        return handle_cgi_response(req, this, PHP);
+
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405();
@@ -232,6 +222,5 @@ void Response::prepare_response(Request &req, Server *server) {
         return make_autoindex(path);
 
     // checkiamo se la location/server ha una root dir
-
     return make_500();
 }

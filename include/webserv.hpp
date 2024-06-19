@@ -3,17 +3,15 @@
 
 #include "Logger.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 #include "Server.hpp"
 #include "ServersManager.hpp"
-#include "Response.hpp"
 #include <cctype>
 #include <cstdlib>
 #include <fcntl.h>
 #include <sstream>
 #include <sys/epoll.h>
 #include <unistd.h>
-
-#define BUFFER_SIZE 1024
 
 typedef struct s_webserv {
     Logger logger;
