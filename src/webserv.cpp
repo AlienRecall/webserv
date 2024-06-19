@@ -12,6 +12,7 @@ int add_epoll(int epoll_fd, int fd) {
 
 int handle_client(int client_fd, t_webserv *w) {
     Request req;
+    Response res; // Istanza della classe Response per generare la risposta HTTP
     int err, bytesRead;
     char buffer[BUFFER_SIZE + 1];
 
