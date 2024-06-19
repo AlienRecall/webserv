@@ -190,7 +190,8 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language)
             close(fd[0]); // close dopo che ho finito di leggere
             int status;
             waitpid(pid, &status, 0);
-            resp->set_body(output); //uscita dalla funzione dell'output
+            std::cout << "questo è l'output" << output << std::endl;
+            resp->set_body(output); // uscita dalla funzione dell'output
             return;
         }
     }
@@ -212,12 +213,9 @@ void Response::prepare_response(Request &req, Server *server) {
     std::cout << route_config << std::endl;
 
     if (req.get_path().find(".py") != std::string::npos)
-    {
-        std::cout << "SONO QUI DENTRO CAZZOOOOOOOO FORZA ALBANIAAAAAA" << std::endl;
-        handle_cgi_response(req, this, PYTHON);
-    }
-    else if (req.get_path().find(".php") != std::string::npos)
-        handle_cgi_response(req, this, PHP);
+        return (handle_cgi_response(req, this, PYTHON));
+    if (req.get_path().find(".php") != std::string::npos)
+       return (handle_cgi_response(req, this, PHP));
         
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
