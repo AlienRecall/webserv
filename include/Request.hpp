@@ -4,6 +4,7 @@
 #include "Config.hpp"
 #include "Logger.hpp"
 #include <cctype>
+#include <fcntl.h>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -38,12 +39,14 @@ class Request {
 
     typedef std::map<std::string, std::string>::iterator iterator;
     typedef std::map<std::string, std::string>::const_iterator const_iterator;
+    iterator begin() { return _headers.begin(); }
+    iterator end() { return _headers.end(); }
 
     int get_method() const;
     std::string &get_path();
     const std::string &get_protocol() const;
     iterator get_header(const std::string &);
-    const std::string &get_body() const;
+    std::string &get_body();
 
     int popRequest(char *, int, unsigned int);
 };

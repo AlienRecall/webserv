@@ -15,7 +15,7 @@ const std::string &Request::get_protocol() const { return _protocol; }
 
 Request::iterator Request::get_header(const std::string &k) { return _headers.find(k); }
 
-const std::string &Request::get_body() const { return _body; }
+std::string &Request::get_body() { return _body; }
 
 int Request::parseMethod(std::stringstream &buffer) {
     std::string buff;
@@ -48,8 +48,8 @@ int Request::parsePath(std::stringstream &buffer) {
     if (buff[0] != '/')
         return ERROR_GETTING_PATH;
     size_t size = buff.size();
-    if (buff[size - 1] == '/')
-        buff.substr(0, size - 1);
+    if (size > 1 && buff[size - 1] == '/')
+        buff = buff.substr(0, size - 1);
     _path = buff;
     return OK;
 }
