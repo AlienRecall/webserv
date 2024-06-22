@@ -16,6 +16,7 @@ class Pages {
     static std::map<const std::string, std::string> cache;
 
     static const std::string get(const std::string &);
+    static const std::string get_200();
     static const std::string get_302(const std::string &);
     static const std::string get_400();
     static const std::string get_401();

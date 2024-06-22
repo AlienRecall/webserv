@@ -67,10 +67,9 @@ Error ConfigParser::populate_route_config(RouteConfig &conf) {
     case 10:
         conf.set_cgi_ext(_value);
         break;
-    case 11: {
+    case 11:
         conf.set_upload_location(_value);
         break;
-    }
     }
     return OK;
 }
@@ -207,6 +206,5 @@ Error ConfigParser::load_config() {
             }
         }
     }
-    std::cout << "size: " << _configs.size() << std::endl;
     return OK;
 }

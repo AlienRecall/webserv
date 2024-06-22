@@ -2,13 +2,14 @@
 #include <string>
 
 void Pages::init() {
-    push("./assets/default_pages/400.html", "400");
-    push("./assets/default_pages/401.html", "401");
-    push("./assets/default_pages/403.html", "403");
-    push("./assets/default_pages/404.html", "404");
-    push("./assets/default_pages/405.html", "405");
-    push("./assets/default_pages/500.html", "500");
-    push("./assets/default_pages/timeout.html", "timeout");
+    push("./html/200.html", "200");
+    push("./html/400.html", "400");
+    push("./html/401.html", "401");
+    push("./html/403.html", "403");
+    push("./html/404.html", "404");
+    push("./html/405.html", "405");
+    push("./html/500.html", "500");
+    push("./html/timeout.html", "timeout");
 }
 
 Error Pages::push(const std::string &path, std::string key) {
@@ -37,6 +38,8 @@ const std::string Pages::get(const std::string &key) {
     return get(key);
 }
 
+const std::string Pages::get_200() { return get("200"); }
+
 const std::string Pages::get_302(const std::string &url) {
     std::string page = (std::string)get("302");
     while (size_t pos = page.find("$REDIRECT") != std::string::npos) {
@@ -58,4 +61,3 @@ const std::string Pages::get_405() { return get("405"); }
 const std::string Pages::get_500() { return get("500"); }
 
 const std::string Pages::get_timeout() { return get("timeout"); }
-
