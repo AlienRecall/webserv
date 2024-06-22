@@ -14,6 +14,7 @@
 std::map<const std::string, std::string> Pages::cache;
 
 int main(int argc, char *argv[]) {
+    srand(time(NULL));
     Pages::init();
     Error err;
     t_webserv w;
