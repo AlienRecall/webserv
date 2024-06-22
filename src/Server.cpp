@@ -65,6 +65,8 @@ void Server::get_path_config(std::string path, RouteConfig &config) {
             config.set_redirect(ptr->get_redirect());
         if (config.get_index() == "")
             config.set_index(ptr->get_index() == "" ? "no-index" : ptr->get_index());
+        if (config.get_root() == "")
+            config.set_root(ptr->get_root() == "" ? "" : ptr->get_root());
         if (config.get_dir_listing() == -1 && ptr->get_dir_listing() != -1)
             config.set_dir_listing(ptr->get_dir_listing() ? "on" : "off");
         if (ptr->cgi_ext_size() > 0) {
@@ -72,6 +74,10 @@ void Server::get_path_config(std::string path, RouteConfig &config) {
                  it != ptr->cgi_ext_end(); it++)
                 config.set_cgi_ext(*it);
         }
+        if (config.get_upload_location() == "" && ptr->get_upload_location() != "")
+            config.set_upload_location(ptr->get_upload_location());
+    } else {
+        config.set_index("no-index");
     }
 
     size_t pos = path.find_last_of("/");

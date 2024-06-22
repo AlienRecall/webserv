@@ -1,5 +1,9 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <unistd.h>
 
 // Costruttore della classe Response
 Response::Response() {
@@ -24,6 +28,8 @@ std::string Response::status_text(int status_code) {
         return ("Unauthorized");
     case STATUS_FORBIDDEN:
         return ("Forbidden");
+    case STATUS_NOT_FOUND:
+        return ("Not Found");
     default:
         return ("Internal Server Error");
     }
@@ -34,10 +40,7 @@ void Response::set_protocol(const std::string &protocol) { _protocol = protocol;
 
 // stato della risposta
 void Response::set_status(int status_code) {
-    // Usa std::stringstream per convertire status_code in stringa
-    std::stringstream ss;
-    ss << status_code;
-    _status_code = ss.str();
+    _status_code = itoa(status_code);
     _status = status_text(status_code);
 }
 
@@ -64,6 +67,7 @@ char *Response::c_str() {
         return (make_c_str(_size, _body));
     } else if (_body.empty())
         return (0);
+
     std::ostringstream response;
     response << _protocol << " " << _status_code << " " << _status << "\r\n";
     for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
@@ -72,6 +76,7 @@ char *Response::c_str() {
     }
     response << "\r\n";
     response << _body;
+
     std::string res_str = response.str();
     _size = res_str.size();
     return (make_c_str(_size, res_str));
@@ -91,10 +96,38 @@ size_t Response::length() const {
     return (response.str().length());
 }
 
+void read_file(const std::string &file_path, std::string &str) {
+    std::ifstream file;
+    std::stringstream ss;
+
+    file.open(file_path.c_str());
+    if (!file.is_open())
+        return;
+
+    ss << file.rdbuf();
+    str = ss.str();
+}
+
 void Response::add_default_headers() {
+    time_t rawtime;
+    std::string timeStr;
+
+    time(&rawtime);
+    timeStr = ctime(&rawtime);
+    timeStr = timeStr.substr(0, timeStr.size() - 1);
+
     set_header("Server", "Webserv");
+    set_header("Date", timeStr);
     if (_body.length() > 0)
         set_header("Content-Length", itoa(_body.length()));
+}
+
+void Response::make_404() {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_NOT_FOUND);
+    set_body(Pages::get_404());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
 }
 
 void Response::make_405() {
@@ -126,6 +159,14 @@ void Response::make_timeout() {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_INTERNAL_SERVER_ERROR);
     set_body(Pages::get_timeout());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
+
+void Response::make_page() {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_OK);
+    set_body(_body);
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
@@ -229,29 +270,61 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
     }
 }
 
+std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
+    std::string rc_root = rc.get_root();
+    std::string rc_index = rc.get_index();
+    std::string srv_root = srv.get_root();
+    std::string srv_index = srv.get_index();
+
+    std::string path = rc_root.empty()
+                           ? srv_root.empty() ? "." + req_path : srv_root + req_path
+                           : rc_root + req_path;
+
+    if (path == "./" && !srv_index.empty())
+        return path + "html/" + srv_index;
+    if (rc_index.empty() || rc_index == "no-index")
+        return path;
+    return "./html/" + rc_index;
+}
+
 // Prepara la risposta HTTP in base alla richiesta
 void Response::prepare_response(Request &req, Server *server) {
-    Error err;
     RouteConfig route_config;
+    Config &server_config = *server->get_config();
+    std::string req_path = req.get_path();
 
-    (void)err;
-    server->get_path_config(req.get_path(), route_config);
+    server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
     std::cout << req.get_body().size() << std::endl;
-    if (req.get_path().find(".py") != std::string::npos)
+
+    if (req_path.find(".py") != std::string::npos)
         return (handle_cgi_response(req, this, PYTHON));
-    if (req.get_path().find(".php") != std::string::npos)
+    if (req_path.find(".php") != std::string::npos)
         return handle_cgi_response(req, this, PHP);
+
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405();
+
     if (route_config.get_redirect() != "")
         return make_302(route_config.get_redirect());
-    std::string path = route_config.get_root().empty()
-                           ? req.get_path()
-                           : route_config.get_root() + req.get_path();
+
+    std::string path = make_path(req_path, route_config, server_config);
+    std::cout << "path is: " << path << std::endl;
+
     if (route_config.get_dir_listing() == 1)
         return make_autoindex(path);
-    // checkiamo se la location/server ha una root dir
-    return make_500();
+
+    if (route_config.get_upload_location() != "")
+        return save_file(req, route_config.get_upload_location());
+
+    std::cout << access(path.c_str(), R_OK | X_OK) << std::endl;
+
+    read_file(path, _body);
+
+    if (_body.empty()) {
+        std::cout << "empty." << std::endl;
+        return make_404();
+    }
+    return make_page();
 }
