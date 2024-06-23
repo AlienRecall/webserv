@@ -122,6 +122,14 @@ void Response::add_default_headers() {
         set_header("Content-Length", itoa(_body.length()));
 }
 
+void Response::make_400() {
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_BAD_REQUEST);
+    set_body(Pages::get_400());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
+
 void Response::make_404() {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_NOT_FOUND);

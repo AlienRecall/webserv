@@ -11,6 +11,21 @@ int add_epoll(int epoll_fd, int fd) {
     return OK;
 }
 
+void send_response(int client_fd, Response &res, Error err = OK) {
+    char *response_str = res.c_str(); // Converte la risposta in una stringa C
+    if (!response_str) {
+        res.make_500();
+        if (err != OK)
+            res.make_400();
+        response_str = res.c_str();
+    }
+
+    std::cout << "response code: " << res.get_status_code()
+              << " response len: " << res.length() << std::endl;
+    write(client_fd, response_str, res.length()); // Scrive la risposta al client
+    delete[] response_str; // Dealloca la memoria allocata per la stringa di risposta
+}
+
 Error handle_client(int client_fd, t_webserv *w) {
     Error err;
     Request req;
@@ -29,24 +44,14 @@ Error handle_client(int client_fd, t_webserv *w) {
 
     err = req.popRequest(buffer, client_fd, w->_ptr->get_client_body_size());
     if (err != OK) {
-        close(client_fd);
+        send_response(client_fd, res, err);
         return err;
     }
     std::cout << "received req on uri: " << req.get_path() << std::endl;
 
     res.prepare_response(req, w->_ptr); // Prepara la risposta in base alla richiesta
-    char *response_str = res.c_str();   // Converte la risposta in una stringa C
-    if (!response_str) {
-        std::cout << "close client (no response)" << std::endl;
-        close(client_fd);
-        return CUSTOM;
-    }
-
-    std::cout << "response code: " << res.get_status_code()
-              << " response len: " << res.length() << std::endl;
-    write(client_fd, response_str, res.length()); // Scrive la risposta al client
+    send_response(client_fd, res);
     close(client_fd);
     std::cout << "sent response to client" << std::endl;
-    delete[] response_str; // Dealloca la memoria allocata per la stringa di risposta
     return OK;
 }

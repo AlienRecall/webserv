@@ -23,6 +23,7 @@
 #define STATUS_CREATED 201
 #define STATUS_MOVED_PERM 301
 #define STATUS_FOUND 302
+#define STATUS_BAD_REQUEST 400
 #define STATUS_UNAUTHORIZED 401
 #define STATUS_FORBIDDEN 403
 #define STATUS_NOT_FOUND 404
@@ -74,14 +75,6 @@ class Response {
     bool check_timer(int fd, pid_t pid);
     void save_file(Request &, const std::string &);
 
-    // methods to prepare the response
-    void make_404();
-    void make_405();
-    void make_302(const std::string &);
-    void make_500();
-    void make_page();
-    void make_timeout();
-
   public:
     Response();
     ~Response();
@@ -105,6 +98,15 @@ class Response {
     // Metodo per ottenere la risposta come stringa C
     size_t length() const;
     // calcolare la lunghezza di tutto quello che c'è da passare
+
+    // methods to prepare the response
+    void make_400();
+    void make_404();
+    void make_405();
+    void make_302(const std::string &);
+    void make_500();
+    void make_page();
+    void make_timeout();
 
     void prepare_response(Request &, Server *);
 };
