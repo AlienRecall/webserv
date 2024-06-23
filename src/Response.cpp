@@ -293,7 +293,6 @@ void Response::prepare_response(Request &req, Server *server) {
 
     server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
-    std::cout << req.get_body().size() << std::endl;
 
     if (req_path.find(".py") != std::string::npos)
         return (handle_cgi_response(req, this, PYTHON));

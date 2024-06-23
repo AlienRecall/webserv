@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <vector>
 
-#define MAX_EVENTS 10
-#define MAX_CLIENTS 10
+#define MAX_EVENTS 10000
+#define MAX_CLIENTS 10000
 
 #define MAX_CLIENT_BODY_SIZE 11048576 // will be changed
 

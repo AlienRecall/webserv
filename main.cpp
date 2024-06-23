@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
     int epoll_fd = epoll_create1(0);
     if (epoll_fd == -1)
         return w.logger.error("epoll_create error");
+    set_fd_non_blocking(epoll_fd);
 
     for (ServersManager::iterator it = w.sm.begin(); it != w.sm.end(); it++) {
         std::cout << "server fd: " << (*it).get_fd() << std::endl;
@@ -81,18 +82,16 @@ int main(int argc, char *argv[]) {
                     return w.logger.error("webserv: epoll_ctl error");
 
                 err = handle_client(client_fd, &w);
-                if (err != OK) {
-                    w.sm.remove_connection(client_fd);
+                if (err != OK)
                     w.logger.log_error(err);
-                }
+                w.sm.remove_connection(client_fd);
             } else if (is_server == -1) {
                 return w.logger.error("unexpected error: fd not recognized.");
             } else {
                 err = handle_client(fd, &w);
-                if (err != OK) {
-                    w.sm.remove_connection(fd);
+                if (err != OK)
                     w.logger.log_error(err);
-                }
+                w.sm.remove_connection(fd);
             }
         }
     }

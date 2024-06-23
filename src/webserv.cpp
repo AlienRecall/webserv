@@ -18,9 +18,8 @@ Error handle_client(int client_fd, t_webserv *w) {
     int bytesRead;
     char buffer[BUFFER_SIZE + 1];
 
-    while ((bytesRead = read(client_fd, buffer, BUFFER_SIZE)) == -1) {
+    while ((bytesRead = read(client_fd, buffer, BUFFER_SIZE)) == -1)
         continue;
-    }
     if (bytesRead == 0) {
         close(client_fd);
         return CUSTOM;
