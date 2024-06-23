@@ -38,11 +38,6 @@ int main(int argc, char *argv[]) {
         w.logger.debug("setting up servers...");
         for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++) {
             Server s = Server(new Config(*it));
-            // err = s.sanitize();
-            // if (err != OK) {
-            //     return 1;
-            // }
-
             s.open_socket();
             w.sm.push_server(s);
         }
@@ -85,11 +80,19 @@ int main(int argc, char *argv[]) {
                 if (add_epoll(epoll_fd, client_fd))
                     return w.logger.error("webserv: epoll_ctl error");
 
-                handle_client(client_fd, &w);
+                err = handle_client(client_fd, &w);
+                if (err != OK) {
+                    w.sm.remove_connection(client_fd);
+                    w.logger.log_error(err);
+                }
             } else if (is_server == -1) {
                 return w.logger.error("unexpected error: fd not recognized.");
             } else {
-                handle_client(fd, &w);
+                err = handle_client(fd, &w);
+                if (err != OK) {
+                    w.sm.remove_connection(fd);
+                    w.logger.log_error(err);
+                }
             }
         }
     }

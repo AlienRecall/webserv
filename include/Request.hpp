@@ -27,11 +27,11 @@ class Request {
     std::map<std::string, std::string> _headers;
     std::string _body;
 
-    int parseMethod(std::stringstream &);
-    int parsePath(std::stringstream &);
-    int parseProtocol(std::stringstream &);
-    int parseHeaders(std::stringstream &);
-    int parseBody(std::stringstream &, int, int);
+    Error parseMethod(std::stringstream &);
+    Error parsePath(std::stringstream &);
+    Error parseProtocol(std::stringstream &);
+    Error parseHeaders(std::stringstream &);
+    Error parseBody(std::stringstream &, int, int);
 
   public:
     Request();
@@ -48,7 +48,7 @@ class Request {
     iterator get_header(const std::string &);
     std::string &get_body();
 
-    int popRequest(char *, int, unsigned int);
+    Error popRequest(char *, int, unsigned int);
 };
 
 #endif

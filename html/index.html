@@ -1,3 +1,39 @@
-<html>
-    index ciao ciao hello world!
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Index Page</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #f0f0f0;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+            }
+            a {
+                display: block;
+                margin: 10px 0;
+                color: #007bff;
+                text-decoration: none;
+                font-size: 1.2em;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Welcome to Webserv</h1>
+            <a href="/post">Test POST Request</a>
+            <a href="/upload">Test File Upload</a>
+        </div>
+    </body>
 </html>

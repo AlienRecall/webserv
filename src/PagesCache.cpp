@@ -3,6 +3,7 @@
 
 void Pages::init() {
     push("./html/200.html", "200");
+    push("./html/302.html", "302");
     push("./html/400.html", "400");
     push("./html/401.html", "401");
     push("./html/403.html", "403");

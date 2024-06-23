@@ -77,6 +77,7 @@ void Server::get_path_config(std::string path, RouteConfig &config) {
         if (config.get_upload_location() == "" && ptr->get_upload_location() != "")
             config.set_upload_location(ptr->get_upload_location());
     } else {
+        config.set_dir_listing("off");
         config.set_index("no-index");
     }
 

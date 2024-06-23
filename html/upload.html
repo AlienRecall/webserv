@@ -1,17 +1,38 @@
 <!doctype html>
-
-<html>
-    <body class="main">
-        <h2>Upload</h2>
-        <h3>Select file to upload :</h3>
-        <form
-            action="/upload"
-            class="upload"
-            method="post"
-            enctype="multipart/form-data"
-        >
-            <input type="file" name="fileToUpload" id="fileToUpload" />
-            <input type="submit" value="Upload" name="submit" />
-        </form>
-        <br /><br />
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test File Upload</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #f0f0f0;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+            }
+            input[type="file"],
+            input[type="submit"] {
+                padding: 10px;
+                margin: 5px 0;
+                font-size: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Test File Upload</h1>
+            <form action="/upload-file" method="post" enctype="multipart/form-data">
+                <input type="file" name="fileToUpload" id="fileToUpload" required />
+                <input type="submit" value="Upload" name="submit" />
+            </form>
+            <a href="/files">Check uploaded files</a>
+        </div>
+    </body>
 </html>

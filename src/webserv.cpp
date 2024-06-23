@@ -11,20 +11,22 @@ int add_epoll(int epoll_fd, int fd) {
     return OK;
 }
 
-int handle_client(int client_fd, t_webserv *w) {
+Error handle_client(int client_fd, t_webserv *w) {
+    Error err;
     Request req;
     Response res; // Istanza della classe Response per generare la risposta HTTP
-    int err, bytesRead;
+    int bytesRead;
     char buffer[BUFFER_SIZE + 1];
 
     while ((bytesRead = read(client_fd, buffer, BUFFER_SIZE)) == -1) {
         continue;
     }
     if (bytesRead == 0) {
-        w->sm.remove_connection(client_fd);
+        close(client_fd);
         return CUSTOM;
     }
     buffer[bytesRead] = 0;
+    std::cout << buffer << std::endl;
 
     err = req.popRequest(buffer, client_fd, w->_ptr->get_client_body_size());
     if (err != OK) {
@@ -36,7 +38,7 @@ int handle_client(int client_fd, t_webserv *w) {
     res.prepare_response(req, w->_ptr); // Prepara la risposta in base alla richiesta
     char *response_str = res.c_str();   // Converte la risposta in una stringa C
     if (!response_str) {
-        std::cout << "chiudo client (no response)" << std::endl;
+        std::cout << "close client (no response)" << std::endl;
         close(client_fd);
         return CUSTOM;
     }

@@ -77,7 +77,29 @@ Error Logger::log_error(Error err, std::string line) {
     case NO_KEY_FOUND:
         std::cout << "unexpected key";
         break;
+    case METHOD_NOT_SUPPORTED:
+        std::cout << "method not supported";
+        break;
+    case NO_SLASH_PATH:
+        std::cout << "invalid path, it should start with '/'";
+        break;
+    case INVALID_PROTOCOL:
+        std::cout << "invalid protocol";
+        break;
+    case INVALID_HEADERS:
+        std::cout << "error parsing headers";
+        break;
+    case NO_CONTENT_LEN:
+        std::cout << "no content length header found";
+        break;
+    case BODY_SIZE_EXCEEDED:
+        std::cout << "payload is larger than max body size";
+        break;
+    case CONTENT_DIFF:
+        std::cout << "content length is different from the payload length";
+        break;
     default:
+        std::cout << "error code: " << err;
         break;
     }
     std::cout << std::endl;

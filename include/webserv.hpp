@@ -26,6 +26,6 @@ void set_fd_non_blocking(int);
 
 int add_epoll(int epoll_fd, int fd);
 
-int handle_client(int client_fd, t_webserv *server);
+Error handle_client(int client_fd, t_webserv *server);
 
 #endif

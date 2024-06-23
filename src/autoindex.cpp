@@ -8,14 +8,15 @@ std::string complete_page(const std::string &path, const std::string &list) {
     return start + list + "<tr><th colspan=5><hr></table></html>";
 }
 
-std::string direntry_to_html(std::string &name, struct stat *buf) {
+std::string direntry_to_html(const std::string &path, std::string &name,
+                             struct stat *buf) {
     std::string last_mod = "-", size = "-";
     if (buf) {
         last_mod = std::ctime(&(buf->st_mtime));
         size = Response::itoa(buf->st_size / 1000);
     }
 
-    return "<tr><td valign=top> <td><a href=" + name + ">" + name +
+    return "<tr><td valign=top> <td><a href=" + path + "/" + name + ">" + name +
            "</a><td align=right>" + last_mod + "<td align=right>" + size + " KB<td>";
 }
 
@@ -35,7 +36,8 @@ Error list_dir(const std::string &path, std::string &list) {
 
     std::sort(arr.begin(), arr.end());
     for (std::vector<std::string>::iterator it = arr.begin(); it != arr.end(); it++)
-        list += direntry_to_html(*it, stat((path + *it).c_str(), &buf) == -1 ? 0 : &buf);
+        list += direntry_to_html(path, *it,
+                                 stat((path + *it).c_str(), &buf) == -1 ? 0 : &buf);
 
     return OK;
 }

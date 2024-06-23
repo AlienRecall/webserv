@@ -97,12 +97,12 @@ size_t Response::length() const {
 }
 
 void read_file(const std::string &file_path, std::string &str) {
-    std::ifstream file;
+    std::ifstream file(file_path.c_str(), std::ios::binary);
     std::stringstream ss;
 
-    file.open(file_path.c_str());
-    if (!file.is_open())
+    if (!file.is_open()) {
         return;
+    }
 
     ss << file.rdbuf();
     str = ss.str();
@@ -167,7 +167,6 @@ void Response::make_page() {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_OK);
     set_body(_body);
-    set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
 
@@ -276,15 +275,14 @@ std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
     std::string srv_root = srv.get_root();
     std::string srv_index = srv.get_index();
 
-    std::string path = rc_root.empty()
-                           ? srv_root.empty() ? "." + req_path : srv_root + req_path
-                           : rc_root + req_path;
+    std::string root = rc_root.empty() ? (srv_root.empty() ? "." : srv_root) : rc_root;
+    std::string path = root + req_path;
 
-    if (path == "./" && !srv_index.empty())
-        return path + "html/" + srv_index;
+    if (req_path == "/" && !srv_index.empty())
+        return path + srv_index;
     if (rc_index.empty() || rc_index == "no-index")
         return path;
-    return "./html/" + rc_index;
+    return root + (rc_index[0] == '/' ? rc_index : '/' + rc_index);
 }
 
 // Prepara la risposta HTTP in base alla richiesta
@@ -306,8 +304,9 @@ void Response::prepare_response(Request &req, Server *server) {
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405();
 
-    if (route_config.get_redirect() != "")
+    if (route_config.get_redirect() != "") {
         return make_302(route_config.get_redirect());
+    }
 
     std::string path = make_path(req_path, route_config, server_config);
     std::cout << "path is: " << path << std::endl;
@@ -318,11 +317,16 @@ void Response::prepare_response(Request &req, Server *server) {
     if (route_config.get_upload_location() != "")
         return save_file(req, route_config.get_upload_location());
 
-    std::cout << access(path.c_str(), R_OK | X_OK) << std::endl;
+    if (access(path.c_str(), R_OK) != -1)
+        read_file(path, _body);
 
-    read_file(path, _body);
+    set_header("Content-Type", "text/html; charset=utf-8");
+    if (path.find(".jpg") != std::string::npos)
+        set_header("Content-Type", "image/jpeg");
+    else if (path.find(".png") != std::string::npos)
+        set_header("Content-Type", "image/png");
 
-    if (_body.empty()) {
+    if (_body.size() == 0) {
         std::cout << "empty." << std::endl;
         return make_404();
     }
