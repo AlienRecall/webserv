@@ -57,21 +57,16 @@ class Response {
   private:
     size_t _size;
     std::string _protocol;
-    // Stringa per il protocollo HTTP
     std::string _status_code;
-    // Stringa per il codice di stato
     std::string _status;
-    // Stringa per il messaggio di stato
     std::map<std::string, std::string> _headers;
-    // Mappa per gli headers della risposta
     std::string _body;
-    // Stringa per il corpo della risposta
 
     std::string status_text(int); // Metodo per ottenere il messaggio di stato
 
     void add_default_headers();
 
-    void make_autoindex(const std::string &);
+    void make_autoindex(const std::string &, Config *);
     void handle_cgi_response(Request &req, Response *resp, int language);
     bool check_timer(int fd, pid_t pid);
     void save_file(Request &, const std::string &);
@@ -101,11 +96,11 @@ class Response {
     // calcolare la lunghezza di tutto quello che c'è da passare
 
     // methods to prepare the response
-    void make_400();
+    void make_400(Config *config);
     void make_404(Config *);
-    void make_405();
-    void make_302(const std::string &);
-    void make_500();
+    void make_405(Config *config);
+    void make_302(const std::string &, Config *config);
+    void make_500(Config *config);
     void make_page();
     void make_timeout();
 

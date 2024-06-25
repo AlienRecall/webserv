@@ -11,12 +11,13 @@ int add_epoll(int epoll_fd, int fd) {
     return OK;
 }
 
-void send_response(int client_fd, Response &res, Error err = OK) {
+void send_response(int client_fd, Response &res, Config *config, Error err = OK)
+{
     char *response_str = res.c_str(); // Converte la risposta in una stringa C
     if (!response_str) {
-        res.make_500();
+        res.make_500(config);
         if (err != OK)
-            res.make_400();
+            res.make_400(config);
         response_str = res.c_str();
     }
 
@@ -44,13 +45,13 @@ Error handle_client(int client_fd, t_webserv *w) {
 
     err = req.popRequest(buffer, client_fd, w->_ptr->get_client_body_size());
     if (err != OK) {
-        send_response(client_fd, res, err);
+        send_response(client_fd, res, w->_ptr->get_config(), err);
         return err;
     }
     std::cout << "received req on uri: " << req.get_path() << std::endl;
 
     res.prepare_response(req, w->_ptr); // Prepara la risposta in base alla richiesta
-    send_response(client_fd, res);
+    send_response(client_fd, res, w->_ptr->get_config());
     close(client_fd);
     std::cout << "sent response to client" << std::endl;
     return OK;

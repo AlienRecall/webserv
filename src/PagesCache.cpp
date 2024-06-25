@@ -13,13 +13,28 @@ void Pages::init() {
     push("./html/timeout.html", "timeout");
 }
 
-Error Pages::push(const std::string &path, std::string key) {
-    std::ostringstream buff;
+Error Pages::push(const std::string &path, std::string key)
+{
+    // Controlla se il file contiene "_custom" prima dell'estensione ".html"
+    size_t pos = path.rfind(".html");
+    if (pos != std::string::npos)
+    {
+        size_t custom_pos = path.rfind("_custom", pos);
+        if (custom_pos != std::string::npos && custom_pos + 7 == pos)
+        {
+            std::cerr << "Error: Custom error files are not accepted. File: " << path << std::endl;
+            return INVALID_CUSTOM_FILE;
+        }
+    }
     std::ifstream file(path.c_str());
 
     if (!file.is_open())
-        return OPEN_FILE;
+    {
+        std::cerr << "Error: File " << path << " not found." << std::endl;
+        // return OPEN_FILE;
+    }
 
+    std::ostringstream buff;
     buff << file.rdbuf();
     cache[key.empty() ? path : key] = buff.str();
     return OK;

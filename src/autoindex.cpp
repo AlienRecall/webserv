@@ -42,13 +42,13 @@ Error list_dir(const std::string &path, std::string &list) {
     return OK;
 }
 
-void Response::make_autoindex(const std::string &path) {
+void Response::make_autoindex(const std::string &path, Config *config) {
     std::string list = "";
 
     Error err = list_dir(path, list);
     if (err != OK) {
         std::cout << "webserv: make_autoindex: cannot opendir: " << path << std::endl;
-        return make_500();
+        return make_500(config);
     }
 
     set_protocol(PROTOCOL_11);

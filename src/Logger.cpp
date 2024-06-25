@@ -98,6 +98,9 @@ Error Logger::log_error(Error err, std::string line) {
     case CONTENT_DIFF:
         std::cout << "content length is different from the payload length";
         break;
+    case INVALID_CUSTOM_FILE:
+        std::cout << "file not accepted, modify the name";
+        break;
     default:
         std::cout << "error code: " << err;
         break;

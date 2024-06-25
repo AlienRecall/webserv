@@ -123,21 +123,6 @@ void Response::add_default_headers() {
         set_header("Content-Length", itoa(_body.length()));
 }
 
-void Response::make_400() {
-    set_protocol(PROTOCOL_11);
-    set_status(STATUS_BAD_REQUEST);
-    set_body(Pages::get_400());
-    set_header("Content-Type", "text/html; charset=utf-8");
-    add_default_headers();
-}
-
-// std::string Response::uitoa(unsigned int v)
-// {
-//     std::stringstream s;
-//     s << v;
-//     return s.str();
-// }
-
 bool Response::set_body_custom(Config *config, unsigned int error_number)
 {
     for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
@@ -153,13 +138,22 @@ bool Response::set_body_custom(Config *config, unsigned int error_number)
             else // se NON va a buon fine
                 set_body(Pages::get_500());
             return true;
-        } 
-  }
+        }
+    }
     return false;
 }
 
+void Response::make_400(Config *config)
+{
+    set_protocol(PROTOCOL_11);
+    set_status(STATUS_BAD_REQUEST);
+    if (set_body_custom(config, 404) == false)
+        set_body(Pages::get_400());
+    set_header("Content-Type", "text/html; charset=utf-8");
+    add_default_headers();
+}
+
 void Response::make_404(Config *config) {
-    std::cout << "sono qui!!!!!!!!" << std::cout;
     set_protocol(PROTOCOL_11);
     set_status(STATUS_NOT_FOUND);
     if (set_body_custom(config, 404) == false)
@@ -168,27 +162,33 @@ void Response::make_404(Config *config) {
     add_default_headers();
 }
 
-void Response::make_405() {
+void Response::make_405(Config *config)
+{
     set_protocol(PROTOCOL_11);
     set_status(STATUS_METHOD_NOT_ALLOWED);
-    set_body(Pages::get_405());
+    if (set_body_custom(config, 405) == false)
+        set_body(Pages::get_405());
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
 
-void Response::make_302(const std::string &loc) {
+void Response::make_302(const std::string &loc, Config *config)
+{
     set_protocol(PROTOCOL_11);
     set_status(STATUS_FOUND);
     set_header("Location", loc);
-    set_body(Pages::get_302(loc));
+    if (set_body_custom(config, 302) == false)
+        set_body(Pages::get_302(loc));
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
 
-void Response::make_500() {
+void Response::make_500(Config *config)
+{
     set_protocol(PROTOCOL_11);
     set_status(STATUS_INTERNAL_SERVER_ERROR);
-    set_body(Pages::get_500());
+    if (set_body_custom(config, 500) == false)
+        set_body(Pages::get_500());
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
@@ -353,17 +353,17 @@ void Response::prepare_response(Request &req, Server *server) {
 
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
-        return make_405();
+        return make_405(&server_config);
 
     if (route_config.get_redirect() != "") {
-        return make_302(route_config.get_redirect());
+        return make_302(route_config.get_redirect(), &server_config);
     }
 
     std::string path = make_path(req_path, route_config, server_config);
     std::cout << "path is: " << path << std::endl;
 
     if (route_config.get_dir_listing() == 1)
-        return make_autoindex(path);
+        return make_autoindex(path, &server_config);
 
     if (route_config.get_upload_location() != "")
         return save_file(req, route_config.get_upload_location());
