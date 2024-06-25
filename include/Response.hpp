@@ -4,6 +4,7 @@
 #include "PagesCache.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
+#include "Config.hpp"
 #include <algorithm>
 #include <ctime>
 #include <dirent.h>
@@ -101,7 +102,7 @@ class Response {
 
     // methods to prepare the response
     void make_400();
-    void make_404();
+    void make_404(Config *);
     void make_405();
     void make_302(const std::string &);
     void make_500();
@@ -109,6 +110,10 @@ class Response {
     void make_timeout();
 
     void prepare_response(Request &, Server *);
+
+    // std::string uitoa(unsigned int v);
+    // bool file_exists(const std::string &path);
+    bool set_body_custom(Config *config, unsigned int error_number);
 };
 
 #endif

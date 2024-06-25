@@ -39,6 +39,11 @@ Config &Config::operator=(const Config &c) {
     return *this;
 }
 
+bool Config::error_pages_empty() const
+{
+    return _error_pages.empty();
+}
+
 void Config::set_server_name(const std::string &v) { _server_name = v; }
 
 void Config::set_host(const std::string &v) { _host = v; }
@@ -59,6 +64,7 @@ void Config::set_error_page(const std::string &s, const std::string &p) {
 }
 
 void Config::set_error_pages(std::string &error_pages) {
+        std::cout << "xono dentro ciclo di set error_pages" << std::endl;
     size_t pos = error_pages.find_last_of(' ');
     if (pos == std::string::npos)
         return;

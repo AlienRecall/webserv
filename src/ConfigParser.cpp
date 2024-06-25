@@ -23,6 +23,9 @@ ConfigParser::ConfigParser(const std::string &file)
     : logger(Logger("ConfigParser")), _config_file(file) {}
 
 Error ConfigParser::populate_config(Config &conf) {
+    std::cout << "sono dentro populate_config" << std::endl;
+    std::cout << _key_type << std::endl;
+
     // std::cout << "populating key_type: " << _key_type << ", with value: " <<
     // _value << std::endl;
     switch (_key_type) {
@@ -36,6 +39,7 @@ Error ConfigParser::populate_config(Config &conf) {
         conf.set_port(_value);
         break;
     case 3:
+        std::cout << "xono dentro ciclo di set error_pages" << std::endl;
         conf.set_error_pages(_value);
         break;
     case 4:
@@ -87,6 +91,7 @@ Error ConfigParser::take_value(std::string line) {
     _value = line.substr(start, pos - start);
     if (_key_type == LOCATION_KEY && _value[0] != '/')
         _value = '/' + _value;
+    // std::cout << "_value " << _value << std::endl;
     return OK;
 }
 
@@ -117,6 +122,7 @@ Error ConfigParser::take_key(std::string line) {
     else if (len == -1)
         return NO_VALUE;
     _key = line.substr(start, len);
+    // std::cout << "questo è la cazzo di key" << _key << std::endl;
     return OK;
 }
 
@@ -130,9 +136,11 @@ Error ConfigParser::detect_field(std::string line) {
     if (err != OK)
         return logger.log_error(err, line);
     _key_type = is_valid_key(_key);
+    // std::cout << "questa è keytype_ " << _key_type << std::endl;
     if (static_cast<int>(_key_type) == -1)
         return logger.log_error(NO_KEY_FOUND, line);
     err = take_value(line);
+
     if (err != OK)
         return logger.log_error(err, line);
     return OK;
@@ -159,12 +167,14 @@ Error ConfigParser::parse_segment(std::ifstream &file, RouteConfig *rc,
             err = parse_segment(file, route_conf, route + _value);
             if (err != OK)
                 return err;
-        } else if (route.empty()) {
+        } 
+        else if (route.empty()) {
             if (_key_type < 5)
                 populate_config(*_actual);
             else
                 populate_route_config(*_actual);
-        } else {
+        } 
+        else {
             populate_route_config(*rc);
         }
     }

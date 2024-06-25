@@ -1,5 +1,6 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
+#include "../include/webserv.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -130,10 +131,39 @@ void Response::make_400() {
     add_default_headers();
 }
 
-void Response::make_404() {
+// std::string Response::uitoa(unsigned int v)
+// {
+//     std::stringstream s;
+//     s << v;
+//     return s.str();
+// }
+
+bool Response::set_body_custom(Config *config, unsigned int error_number)
+{
+    for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
+    {
+        if (config->error_pages_empty())
+            break;
+        if (it_err->first == error_number)
+        {
+            if (Pages::get(uitoa(it_err->first) + "_custom") != Pages::get_500()) // se va a buon fine
+            {
+                set_body(Pages::get(uitoa(it_err->first) + "_custom"));
+            }
+            else // se NON va a buon fine
+                set_body(Pages::get_500());
+            return true;
+        } 
+  }
+    return false;
+}
+
+void Response::make_404(Config *config) {
+    std::cout << "sono qui!!!!!!!!" << std::cout;
     set_protocol(PROTOCOL_11);
     set_status(STATUS_NOT_FOUND);
-    set_body(Pages::get_404());
+    if (set_body_custom(config, 404) == false)
+        set_body(Pages::get_404());
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
 }
@@ -293,6 +323,20 @@ std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
     return root + (rc_index[0] == '/' ? rc_index : '/' + rc_index);
 }
 
+// void Response::handle_make_error(int error_number, Config *config)
+// {
+//     if (config->get_error_page(error_number)) //se ho pagina d'errore custom
+//         make_error_page_custom();
+//     else
+//     {
+//         switch (error_number) {
+//             case 404:
+//                 make_404();
+//             case :
+//         }
+//     }
+// }
+
 // Prepara la risposta HTTP in base alla richiesta
 void Response::prepare_response(Request &req, Server *server) {
     RouteConfig route_config;
@@ -335,7 +379,7 @@ void Response::prepare_response(Request &req, Server *server) {
 
     if (_body.size() == 0) {
         std::cout << "empty." << std::endl;
-        return make_404();
+        return make_404(&server_config);
     }
     return make_page();
 }

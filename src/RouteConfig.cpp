@@ -7,6 +7,7 @@ RouteConfig::RouteConfig() {
     _index = "";
     _dir_listing = -1;
     _upload_location = "";
+
 }
 
 RouteConfig::~RouteConfig() {}
@@ -120,6 +121,7 @@ std::ostream &operator<<(std::ostream &os, RouteConfig &conf) {
         }
         os << std::endl;
     }
+    /* forse da aggiugnere error qui */
     if (conf.get_upload_location() != "")
         os << "	upload location: " << conf.get_upload_location() << std::endl;
     return os;

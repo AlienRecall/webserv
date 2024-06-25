@@ -36,11 +36,28 @@ int main(int argc, char *argv[]) {
 
         w.logger.debug("loaded " + uitoa(parser.size()) + " servers.");
         w.logger.debug("setting up servers...");
-        for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++) {
+        for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++)
+        {
             Server s = Server(new Config(*it));
             s.open_socket();
             w.sm.push_server(s);
+
+            // Accesso alla configurazione del server tramite Server
+            Config *config = s.get_config();
+
+            for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
+            {
+                if (access(("./html/" + it_err->second).c_str(), F_OK) != -1)
+                    Pages::push("./html/" + it_err->second, uitoa(it_err->first) + "_custom");
+            }
+
         }
+    }
+    std::cout << "Contents of Pages::cache:" << std::endl;
+    std::map<const std::string, std::string>::iterator it;
+    for (it = Pages::cache.begin(); it != Pages::cache.end(); ++it)
+    {
+        std::cout << "Key: " << it->first << std::endl;
     }
 
     w.logger.debug("initializing webserv.");

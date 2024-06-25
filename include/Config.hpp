@@ -84,6 +84,7 @@ class Config : public RouteConfig {
     typedef std::map<unsigned int, std::string>::iterator error_pages_iterator;
     error_pages_iterator error_pages_begin() { return _error_pages.begin(); }
     error_pages_iterator error_pages_end() { return _error_pages.end(); }
+    bool error_pages_empty() const;
 
     void set_server_name(const std::string &);
     void set_host(const std::string &);
@@ -101,7 +102,7 @@ class Config : public RouteConfig {
     RouteConfig *get_location(const std::string &loc);
 
     void clear_routes();
-};
+    };
 
 std::ostream &operator<<(std::ostream &, Config &);
 std::ostream &operator<<(std::ostream &, RouteConfig &);
