@@ -301,7 +301,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
 
     /* ----------------------------------------- */
         /* GET_METHOD */
-    else
+    else if (req.get_method() == GET)
     {
         char *argv[3];
         int fd[2];
