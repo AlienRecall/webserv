@@ -5,7 +5,8 @@ RUN apt-get -y update && apt-get -y --no-install-recommends install \
     g++ \
     make \
     python3 \
-    php
+    php \
+    curl
 
 COPY . /webserv_proj
 

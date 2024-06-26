@@ -147,7 +147,7 @@ void Response::make_400(Config *config)
 {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_BAD_REQUEST);
-    if (set_body_custom(config, 404) == false)
+    if (set_body_custom(config, 400) == false)
         set_body(Pages::get_400());
     set_header("Content-Type", "text/html; charset=utf-8");
     add_default_headers();
@@ -248,7 +248,6 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
     std::string path = req.get_path().substr(1);
     std::string cmd;
     if (language == PYTHON) {
-        std::cout << "sono dentro python" << std::endl;
         argv[1] = (char *)path.c_str();
         argv[2] = NULL;
         cmd = "/usr/bin/python3";
@@ -278,13 +277,14 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
             close(fd[0]); // unused
             if (dup2(fd[1], STDOUT_FILENO) == -1) {
                 std::cout << ERROR_EXECVE << std::endl;
-                exit(EXIT_FAILURE);
+                return;
             }
             close(fd[1]); // unused
             execve(cmd.c_str(), argv, 0);
             std::cout << ERROR_EXECVE << std::endl;
-            exit(EXIT_FAILURE);
-        } else // parent process
+            return;
+        }
+        else // parent process
         {
             close(fd[1]);
             if (check_timer(fd[0], pid) == false) {
@@ -323,19 +323,6 @@ std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
     return root + (rc_index[0] == '/' ? rc_index : '/' + rc_index);
 }
 
-// void Response::handle_make_error(int error_number, Config *config)
-// {
-//     if (config->get_error_page(error_number)) //se ho pagina d'errore custom
-//         make_error_page_custom();
-//     else
-//     {
-//         switch (error_number) {
-//             case 404:
-//                 make_404();
-//             case :
-//         }
-//     }
-// }
 
 // Prepara la risposta HTTP in base alla richiesta
 void Response::prepare_response(Request &req, Server *server) {

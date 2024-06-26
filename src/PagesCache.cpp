@@ -11,6 +11,7 @@ void Pages::init() {
     push("./html/405.html", "405");
     push("./html/500.html", "500");
     push("./html/timeout.html", "timeout");
+    push("./html/post_cgi.html", "post_cgi");
 }
 
 Error Pages::push(const std::string &path, std::string key)
