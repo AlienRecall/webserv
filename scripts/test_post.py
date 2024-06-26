@@ -1,7 +1,7 @@
 import requests
 
 # URL del server destinazione
-url = 'http://example.com/post_endpoint'
+url = 'http://www.lep.com/response'
 
 # Dati da inviare tramite POST
 data = {

@@ -1,6 +1,7 @@
 #include "../include/PagesCache.hpp"
 #include "../include/Response.hpp"
 #include "../include/webserv.hpp"
+#include "../include/Request.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -238,72 +239,138 @@ bool Response::check_timer(int fd, pid_t pid) {
 
 /* funzione per la gestione della response della cgi */
 void Response::handle_cgi_response(Request &req, Response *resp, int language) {
-    char *argv[3];
-    int fd[2];
-    int pid;
-    char buffer[BUFFER_SIZE];
-    int byteread;
-    int status;
+    
 
     std::string path = req.get_path().substr(1);
     std::string cmd;
-    if (language == PYTHON) {
-        argv[1] = (char *)path.c_str();
-        argv[2] = NULL;
-        cmd = "/usr/bin/python3";
-    } else //(language == PHP)
+
+    /* POST_METHOD_TEST */ 
+
+    // Gestione della richiesta POST
+    if (req.get_method() == POST)
     {
-        argv[1] = (char *)path.c_str();
-        argv[2] = NULL;
-        cmd = "/usr/bin/php";
-    }
-    argv[0] = (char *)cmd.c_str();
-    /* apro il file con ACCESS */
-    // std::cout << "quando qua dentro per capire se la path è corretta :" << path <<
-    // std::endl;
-    if (access(path.c_str(), R_OK | X_OK) != -1) {
-        if (pipe(fd) == -1) {
-            std::cout << ERROR_OPEN_PIPE << std::endl;
-            return;
-        }
-        /* faccio il fork e lavoro il processo figlio */
-        pid = fork();
-        if (pid == -1) {
-            std::cout << ERROR_FORK << std::endl;
-            return;
-        }
-        if (pid == 0) // CHILD PROCESS
+        // Scrivi i dati del corpo della richiesta in un file temporaneo
+        std::string post_data = req.get_body();
+        std::ofstream temp_file("scripts/temp_data.txt");
+        temp_file << post_data;
+        temp_file.close();
+
+        // Esegui lo script Python per generare il file HTML usando execve
+        char *argv[] = {(char *)"/usr/bin/python3", (char *)"scripts/create_html_post.py", (char *)"scripts/temp_data.txt", (char *)"output.html", NULL};
+        pid_t pid = fork();
+
+        if (pid == 0)
         {
-            close(fd[0]); // unused
-            if (dup2(fd[1], STDOUT_FILENO) == -1) {
+            // Processo figlio
+            if (execve("/usr/bin/python3", argv, NULL) == -1)
+            {
+                std::cerr << "Error executing Python script" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (pid < 0)
+        {
+            // Errore nel fork
+            std::cerr << "Fork failed" << std::endl;
+            return /* make_500(&server_config) */;
+        }
+        else
+        {
+            // Processo padre
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
+            {
+                // Leggi il file HTML generato
+                std::string html_content;
+                read_file("output.html", html_content);
+
+                // Invia il file HTML come risposta
+                set_body(html_content);
+                set_header("Content-Type", "text/html; charset=utf-8");
+                return make_page();
+            }
+            else
+            {
+                std::cerr << "Python script execution failed" << std::endl;
+                return /* make_500(&server_config) */;
+            }
+        }
+    }
+
+    /* ----------------------------------------- */
+        /* GET_METHOD */
+    else
+    {
+        char *argv[3];
+        int fd[2];
+        int pid;
+        char buffer[BUFFER_SIZE];
+        int byteread;
+        int status;
+
+        if (language == PYTHON) {
+            argv[1] = (char *)path.c_str();
+            argv[2] = NULL;
+            cmd = "/usr/bin/python3";
+        } else //(language == PHP)
+        {
+            argv[1] = (char *)path.c_str();
+            argv[2] = NULL;
+            cmd = "/usr/bin/php";
+        }
+        argv[0] = (char *)cmd.c_str();
+        /* apro il file con ACCESS */
+        // std::cout << "quando qua dentro per capire se la path è corretta :" << path <<
+        // std::endl;
+        if (access(path.c_str(), R_OK | X_OK) != -1) 
+        {
+            if (pipe(fd) == -1) {
+                std::cout << ERROR_OPEN_PIPE << std::endl;
+                return;
+            }
+            /* faccio il fork e lavoro il processo figlio */
+            pid = fork();
+            if (pid == -1) {
+                std::cout << ERROR_FORK << std::endl;
+                return;
+            }
+            if (pid == 0) // CHILD PROCESS
+            {
+                close(fd[0]); // unused
+                if (dup2(fd[1], STDOUT_FILENO) == -1) {
+                    std::cout << ERROR_EXECVE << std::endl;
+                    return;
+                }
+                close(fd[1]); // unused
+                execve(cmd.c_str(), argv, 0);
                 std::cout << ERROR_EXECVE << std::endl;
                 return;
             }
-            close(fd[1]); // unused
-            execve(cmd.c_str(), argv, 0);
-            std::cout << ERROR_EXECVE << std::endl;
-            return;
+            else // parent process
+            {
+                close(fd[1]);
+                if (check_timer(fd[0], pid) == false) {
+                    std::cout << "Process terminated due to timeout" << std::endl;
+                    return (make_timeout());
+                }
+                std::string output;
+                while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0) {
+                    output.append(buffer, byteread);
+                }
+                close(fd[0]); // close dopo che ho finito di leggere
+                waitpid(pid, &status, 0);
+                std::cout << "questo è l'output" << output << std::endl;
+                resp->set_body(output); // uscita dalla funzione dell'output
+                return;
+            }
         }
-        else // parent process
+        else
         {
-            close(fd[1]);
-            if (check_timer(fd[0], pid) == false) {
-                std::cout << "Process terminated due to timeout" << std::endl;
-                return (make_timeout());
-            }
-            std::string output;
-            while ((byteread = read(fd[0], buffer, BUFFER_SIZE)) > 0) {
-                output.append(buffer, byteread);
-            }
-            close(fd[0]); // close dopo che ho finito di leggere
-            waitpid(pid, &status, 0);
-            std::cout << "questo è l'output" << output << std::endl;
-            resp->set_body(output); // uscita dalla funzione dell'output
+            std::cout << ERROR_FILE_NOT_ACCESS << std::endl;
             return;
         }
-    } else {
-        std::cout << ERROR_FILE_NOT_ACCESS << std::endl;
-        return;
     }
 }
 
@@ -332,7 +399,7 @@ void Response::prepare_response(Request &req, Server *server) {
 
     server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
-
+    
     if (req_path.find(".py") != std::string::npos)
         return (handle_cgi_response(req, this, PYTHON));
     if (req_path.find(".php") != std::string::npos)
