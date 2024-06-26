@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
             s.open_socket();
             w.sm.push_server(s);
 
-            // Accesso alla configurazione del server tramite Server
             Config *config = s.get_config();
 
             for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
