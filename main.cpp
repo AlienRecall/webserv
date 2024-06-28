@@ -52,12 +52,12 @@ int main(int argc, char *argv[]) {
 
         }
     }
-    std::cout << "Contents of Pages::cache:" << std::endl;
-    std::map<const std::string, std::string>::iterator it;
-    for (it = Pages::cache.begin(); it != Pages::cache.end(); ++it)
-    {
-        std::cout << "Key: " << it->first << std::endl;
-    }
+    // std::cout << "Contents of Pages::cache:" << std::endl;
+    // std::map<const std::string, std::string>::iterator it;
+    // for (it = Pages::cache.begin(); it != Pages::cache.end(); ++it)
+    // {
+    //     std::cout << "Key: " << it->first << std::endl;
+    // }
 
     w.logger.debug("initializing webserv.");
     int epoll_fd = epoll_create1(0);

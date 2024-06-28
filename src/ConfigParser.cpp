@@ -23,8 +23,8 @@ ConfigParser::ConfigParser(const std::string &file)
     : logger(Logger("ConfigParser")), _config_file(file) {}
 
 Error ConfigParser::populate_config(Config &conf) {
-    std::cout << "sono dentro populate_config" << std::endl;
-    std::cout << _key_type << std::endl;
+    // std::cout << "sono dentro populate_config" << std::endl;
+    // std::cout << _key_type << std::endl;
 
     // std::cout << "populating key_type: " << _key_type << ", with value: " <<
     // _value << std::endl;
