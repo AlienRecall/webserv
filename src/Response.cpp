@@ -393,14 +393,12 @@ void Response::handle_delete_request(Request &req, Response *resp, Config *serve
 {
     std::string file_path = req.get_path().substr(1);
 
-    // Verifica se il file esiste prima di eliminarlo
     if (access(file_path.c_str(), F_OK) != 0)
     {
         std::cerr << "File not found: " << file_path << std::endl;
-        return make_404(server_config); // Risposta 404 se il file non esiste
+        return make_404(server_config);
     }
 
-    // Elimina il file
     if (unlink(file_path.c_str()) != 0)
     {
         std::cerr << "Error deleting: " << file_path << std::endl;
