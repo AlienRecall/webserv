@@ -98,7 +98,7 @@ Error Request::parseHeaders(std::stringstream &buffer) {
 }
 
 Error Request::parseBody(std::stringstream &buffer, int client_fd, int mbs) {
-    if (_method == GET)
+    if (_method == GET || _method == DELETE)
         return OK;
 
     Request::iterator it = _headers.find("content-length");
@@ -144,14 +144,29 @@ Error Request::popRequest(char *buf, int client_fd, unsigned int mbs) {
     std::stringstream newBuffer(buffer);
 
     if ((err = parseMethod(newBuffer)) != OK)
+    {
+        std::cout << "sono dentro condizione method" << std::endl;
         return (err);
+    }
     if ((err = parsePath(newBuffer)) != OK)
+    {
+        std::cout << "sono dentro condizione path" << std::endl;
         return (err);
+    }
     if ((err = parseProtocol(newBuffer)) != OK)
+    {
+        std::cout << "sono dentro condizione protocol" << std::endl;
         return (err);
+    }
     if ((err = parseHeaders(newBuffer)) != OK)
+    {
+        std::cout << "sono dentro condizione headers" << std::endl;
         return (err);
+    }
     if ((err = parseBody(newBuffer, client_fd, mbs)) != OK)
+    {
+        std::cout << "sono dentro condizione body" << std::endl;
         return (err);
+    }
     return OK;
 }

@@ -105,6 +105,7 @@ class Response {
     void make_timeout();
 
     void prepare_response(Request &, Server *);
+    void handle_delete_request(Request &req, Response *resp, Config *server_config);
 
     // std::string uitoa(unsigned int v);
     // bool file_exists(const std::string &path);

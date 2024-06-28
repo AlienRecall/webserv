@@ -105,7 +105,6 @@ void read_file(const std::string &file_path, std::string &str) {
     if (!file.is_open()) {
         return;
     }
-
     ss << file.rdbuf();
     str = ss.str();
 }
@@ -390,6 +389,31 @@ std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
     return root + (rc_index[0] == '/' ? rc_index : '/' + rc_index);
 }
 
+void Response::handle_delete_request(Request &req, Response *resp, Config *server_config)
+{
+    std::string file_path = req.get_path().substr(1);
+
+    // Verifica se il file esiste prima di eliminarlo
+    if (access(file_path.c_str(), F_OK) != 0)
+    {
+        std::cerr << "File not found: " << file_path << std::endl;
+        return make_404(server_config); // Risposta 404 se il file non esiste
+    }
+
+    // Elimina il file
+    if (unlink(file_path.c_str()) != 0)
+    {
+        std::cerr << "Error deleting: " << file_path << std::endl;
+        return make_500(server_config); // Risposta 500 se c'è un errore durante l'eliminazione
+    }
+
+    std::cout << "file cancellato correttamente: " << file_path << std::endl;
+    resp->set_protocol("HTTP/1.1");
+    resp->set_status(STATUS_OK);
+    resp->set_body("File deleted √.\n");
+    resp->set_header("Content-Type", "text/plain; charset=utf-8");
+    resp->add_default_headers();
+}
 
 // Prepara la risposta HTTP in base alla richiesta
 void Response::prepare_response(Request &req, Server *server) {
@@ -397,13 +421,23 @@ void Response::prepare_response(Request &req, Server *server) {
     Config &server_config = *server->get_config();
     std::string req_path = req.get_path();
 
+    std::cout << "sono dentro prepare response" << std::endl;
+
     server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
-    
+
+    if (req.get_method() == DELETE)
+    {
+        std::cout << "sono dentro DELETE" << std::endl;
+        return handle_delete_request(req, this, &server_config);
+    }
+
     if (req_path.find(".py") != std::string::npos)
         return (handle_cgi_response(req, this, PYTHON));
     if (req_path.find(".php") != std::string::npos)
         return handle_cgi_response(req, this, PHP);
+
+   
 
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
