@@ -1,0 +1,20 @@
+
+curl -X POST -H "Content-Type: plain/text" --data "BODY IS HERE write something shorter or longer than body limit" http://localhost:8080
+
+
+curl -v -X POST -d "name=John&age=25" http://localhost:8080/scripts/test_post.py
+
+
+curl -X POST -d “ciao” http://localhost:8080/submit.py
+
+
+curl -X DELETE http://localhost:8080//webserv_proj/miao.html
+
+curl -X DELETE http://localhost:8080/uploads/example.txt
+
+
+
+curl --resolve www.lep.com:8080:127.0.0.1 http://www.lep.com:52701
+
+
+Netstat -tulnp
