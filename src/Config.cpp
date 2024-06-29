@@ -64,7 +64,6 @@ void Config::set_error_page(const std::string &s, const std::string &p) {
 }
 
 void Config::set_error_pages(std::string &error_pages) {
-        std::cout << "xono dentro ciclo di set error_pages" << std::endl;
     size_t pos = error_pages.find_last_of(' ');
     if (pos == std::string::npos)
         return;

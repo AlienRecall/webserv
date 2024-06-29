@@ -264,7 +264,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
             if (execve("/usr/bin/python3", argv, NULL) == -1)
             {
                 std::cerr << "Error executing Python script" << std::endl;
-                exit(EXIT_FAILURE);
+                return;
             }
         }
         else if (pid < 0)
@@ -402,7 +402,7 @@ void Response::handle_delete_request(Request &req, Response *resp, Config *serve
     if (unlink(file_path.c_str()) != 0)
     {
         std::cerr << "Error deleting: " << file_path << std::endl;
-        return make_500(server_config); // Risposta 500 se c'è un errore durante l'eliminazione
+        return make_500(server_config); 
     }
 
     std::cout << "file cancellato correttamente: " << file_path << std::endl;
@@ -419,14 +419,17 @@ void Response::prepare_response(Request &req, Server *server) {
     Config &server_config = *server->get_config();
     std::string req_path = req.get_path();
 
-    std::cout << "sono dentro prepare response" << std::endl;
 
     server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
+   
+
+    if (route_config.get_allowed_methods() != 0 &&
+        (route_config.get_allowed_methods() & req.get_method()) == 0)
+        return make_405(&server_config);
 
     if (req.get_method() == DELETE)
     {
-        std::cout << "sono dentro DELETE" << std::endl;
         return handle_delete_request(req, this, &server_config);
     }
 
@@ -434,12 +437,6 @@ void Response::prepare_response(Request &req, Server *server) {
         return (handle_cgi_response(req, this, PYTHON));
     if (req_path.find(".php") != std::string::npos)
         return handle_cgi_response(req, this, PHP);
-
-   
-
-    if (route_config.get_allowed_methods() != 0 &&
-        (route_config.get_allowed_methods() & req.get_method()) == 0)
-        return make_405(&server_config);
 
     if (route_config.get_redirect() != "") {
         return make_302(route_config.get_redirect(), &server_config);

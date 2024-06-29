@@ -39,7 +39,6 @@ Error ConfigParser::populate_config(Config &conf) {
         conf.set_port(_value);
         break;
     case 3:
-        std::cout << "xono dentro ciclo di set error_pages" << std::endl;
         conf.set_error_pages(_value);
         break;
     case 4:

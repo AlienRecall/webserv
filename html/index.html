@@ -17,15 +17,33 @@
             .container {
                 text-align: center;
             }
-            a {
+            a, button {
                 display: block;
                 margin: 10px 0;
                 color: #007bff;
                 text-decoration: none;
                 font-size: 1.2em;
+                border: none;
+                background: none;
+                cursor: pointer;
             }
-            a:hover {
+            a:hover, button:hover {
                 text-decoration: underline;
+            }
+            .input-group {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 10px 0;
+            }
+            input[type="text"] {
+                font-size: 1em;
+                padding: 5px;
+                margin-right: 10px;
+            }
+            p {
+                margin: 0;
+                padding: 0;
             }
         </style>
     </head>
@@ -33,6 +51,72 @@
         <div class="container">
             <h1>Welcome to Webserv</h1>
             <a href="/upload">Test File Upload</a>
+
+            <!-- Delete File -->
+            <div class="input-group">
+                <input type="text" id="deleteFilename" placeholder="Enter file name to delete" />
+                <button onclick="deleteFile()">Delete File</button>
+            </div>
+            <p id="deleteResponse"></p>
+
+            <!-- Download File -->
+            <div class="input-group">
+                <input type="text" id="downloadFilename" placeholder="Enter file name to download" />
+                <button onclick="downloadFile()">Download File</button>
+            </div>
+            <p id="downloadResponse"></p>
+
+            <!-- Test CGI Scripts -->
+            <button onclick="window.location.href='/scripts/test.py'">Test GET CGI 01</button>
+            <button onclick="window.location.href='/scripts/test.php'">Test GET CGI 02</button>
+            <button onclick="window.location.href='/scripts/infinite_loop.py'">Test GET CGI 03</button>
         </div>
+
+        <script>
+            function deleteFile() {
+                const filename = document.getElementById('deleteFilename').value;
+                fetch(`/files/${filename}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.status === 404) {
+                        throw new Error('File not found');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('deleteResponse').innerText = data;
+                })
+                .catch(error => {
+                    document.getElementById('deleteResponse').innerText = 'Error: ' + error.message;
+                });
+            }
+
+            function downloadFile() {
+                const filename = document.getElementById('downloadFilename').value;
+                fetch(`/files/${filename}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status === 404) {
+                        throw new Error('File not found');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    document.getElementById('downloadResponse').innerText = 'Error: ' + error.message;
+                });
+            }
+        </script>
     </body>
 </html>
