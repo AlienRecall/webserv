@@ -60,11 +60,11 @@
             <p id="deleteResponse"></p>
 
             <!-- Download File -->
-            <div class="input-group">
+            <!-- <div class="input-group">
                 <input type="text" id="downloadFilename" placeholder="Enter file name to download" />
                 <button onclick="downloadFile()">Download File</button>
             </div>
-            <p id="downloadResponse"></p>
+            <p id="downloadResponse"></p> -->
 
             <!-- Test CGI Scripts -->
             <button onclick="window.location.href='/scripts/test.py'">Test GET CGI 01</button>
@@ -92,31 +92,31 @@
                 });
             }
 
-            function downloadFile() {
-                const filename = document.getElementById('downloadFilename').value;
-                fetch(`/files/${filename}`, {
-                    method: 'GET'
-                })
-                .then(response => {
-                    if (response.status === 404) {
-                        throw new Error('File not found');
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                })
-                .catch(error => {
-                    document.getElementById('downloadResponse').innerText = 'Error: ' + error.message;
-                });
-            }
+            // function downloadFile() {
+            //     const filename = document.getElementById('downloadFilename').value;
+            //     fetch(`/files/${filename}`, {
+            //         method: 'GET'
+            //     })
+            //     .then(response => {
+            //         if (response.status === 404) {
+            //             throw new Error('File not found');
+            //         }
+            //         return response.blob();
+            //     })
+            //     .then(blob => {
+            //         const url = window.URL.createObjectURL(blob);
+            //         const a = document.createElement('a');
+            //         a.style.display = 'none';
+            //         a.href = url;
+            //         a.download = filename;
+            //         document.body.appendChild(a);
+            //         a.click();
+            //         window.URL.revokeObjectURL(url);
+            //     })
+            //     .catch(error => {
+            //         document.getElementById('downloadResponse').innerText = 'Error: ' + error.message;
+            //     });
+            // }
         </script>
     </body>
 </html>

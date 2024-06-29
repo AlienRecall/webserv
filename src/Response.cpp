@@ -401,8 +401,13 @@ void Response::handle_delete_request(Request &req, Response *resp, Config *serve
 
     if (unlink(file_path.c_str()) != 0)
     {
-        std::cerr << "Error deleting: " << file_path << std::endl;
-        return make_500(server_config); 
+        std::cerr << "Error deleting the file: " << file_path << std::endl;
+        resp->set_protocol("HTTP/1.1");
+        resp->set_status(STATUS_INTERNAL_SERVER_ERROR);
+        resp->set_body("File not deleted.\n");
+        resp->set_header("Content-Type", "text/plain; charset=utf-8");
+        resp->add_default_headers();
+        return;
     }
 
     std::cout << "file cancellato correttamente: " << file_path << std::endl;
@@ -411,6 +416,7 @@ void Response::handle_delete_request(Request &req, Response *resp, Config *serve
     resp->set_body("File deleted √.\n");
     resp->set_header("Content-Type", "text/plain; charset=utf-8");
     resp->add_default_headers();
+    return;
 }
 
 // Prepara la risposta HTTP in base alla richiesta
