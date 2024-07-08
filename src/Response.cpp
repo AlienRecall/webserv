@@ -1,11 +1,5 @@
 #include "../include/PagesCache.hpp"
-#include "../include/Response.hpp"
 #include "../include/webserv.hpp"
-#include "../include/Request.hpp"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
 
 // Costruttore della classe Response
 Response::Response() {
@@ -123,19 +117,17 @@ void Response::add_default_headers() {
         set_header("Content-Length", itoa(_body.length()));
 }
 
-bool Response::set_body_custom(Config *config, unsigned int error_number)
-{
-    for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
-    {
+bool Response::set_body_custom(Config *config, unsigned int error_number) {
+    for (Config::error_pages_iterator it_err = config->error_pages_begin();
+         it_err != config->error_pages_end(); it_err++) {
         if (config->error_pages_empty())
             break;
-        if (it_err->first == error_number)
-        {
-            if (Pages::get(uitoa(it_err->first) + "_custom") != Pages::get_500()) // se va a buon fine
+        if (it_err->first == error_number) {
+            if (Pages::get(uitoa(it_err->first) + "_custom") !=
+                Pages::get_500()) // se va a buon fine
             {
                 set_body(Pages::get(uitoa(it_err->first) + "_custom"));
-            }
-            else // se NON va a buon fine
+            } else // se NON va a buon fine
                 set_body(Pages::get_500());
             return true;
         }
@@ -143,8 +135,7 @@ bool Response::set_body_custom(Config *config, unsigned int error_number)
     return false;
 }
 
-void Response::make_400(Config *config)
-{
+void Response::make_400(Config *config) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_BAD_REQUEST);
     if (set_body_custom(config, 400) == false)
@@ -162,8 +153,7 @@ void Response::make_404(Config *config) {
     add_default_headers();
 }
 
-void Response::make_405(Config *config)
-{
+void Response::make_405(Config *config) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_METHOD_NOT_ALLOWED);
     if (set_body_custom(config, 405) == false)
@@ -172,8 +162,7 @@ void Response::make_405(Config *config)
     add_default_headers();
 }
 
-void Response::make_302(const std::string &loc, Config *config)
-{
+void Response::make_302(const std::string &loc, Config *config) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_FOUND);
     set_header("Location", loc);
@@ -183,8 +172,7 @@ void Response::make_302(const std::string &loc, Config *config)
     add_default_headers();
 }
 
-void Response::make_500(Config *config)
-{
+void Response::make_500(Config *config) {
     set_protocol(PROTOCOL_11);
     set_status(STATUS_INTERNAL_SERVER_ERROR);
     if (set_body_custom(config, 500) == false)
@@ -238,16 +226,14 @@ bool Response::check_timer(int fd, pid_t pid) {
 
 /* funzione per la gestione della response della cgi */
 void Response::handle_cgi_response(Request &req, Response *resp, int language) {
-    
 
     std::string path = req.get_path().substr(1);
     std::string cmd;
 
-    /* POST_METHOD_TEST */ 
+    /* POST_METHOD_TEST */
 
     // Gestione della richiesta POST
-    if (req.get_method() == POST)
-    {
+    if (req.get_method() == POST) {
         // Scrivi i dati del corpo della richiesta in un file temporaneo
         std::string post_data = req.get_body();
         std::ofstream temp_file("scripts/temp_data.txt");
@@ -255,32 +241,26 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
         temp_file.close();
 
         // Esegui lo script Python per generare il file HTML usando execve
-        char *argv[] = {(char *)"/usr/bin/python3", (char *)"scripts/create_html_post.py", (char *)"scripts/temp_data.txt", (char *)"output.html", NULL};
+        char *argv[] = {(char *)"/usr/bin/python3", (char *)"scripts/create_html_post.py",
+                        (char *)"scripts/temp_data.txt", (char *)"output.html", NULL};
         pid_t pid = fork();
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             // Processo figlio
-            if (execve("/usr/bin/python3", argv, NULL) == -1)
-            {
+            if (execve("/usr/bin/python3", argv, NULL) == -1) {
                 std::cerr << "Error executing Python script" << std::endl;
                 return;
             }
-        }
-        else if (pid < 0)
-        {
+        } else if (pid < 0) {
             // Errore nel fork
             std::cerr << "Fork failed" << std::endl;
             return /* make_500(&server_config) */;
-        }
-        else
-        {
+        } else {
             // Processo padre
             int status;
             waitpid(pid, &status, 0);
 
-            if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
-            {
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
                 // Leggi il file HTML generato
                 std::string html_content;
                 read_file("output.html", html_content);
@@ -289,9 +269,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
                 set_body(html_content);
                 set_header("Content-Type", "text/html; charset=utf-8");
                 return make_page();
-            }
-            else
-            {
+            } else {
                 std::cerr << "Python script execution failed" << std::endl;
                 return /* make_500(&server_config) */;
             }
@@ -299,9 +277,8 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
     }
 
     /* ----------------------------------------- */
-        /* GET_METHOD */
-    else if (req.get_method() == GET)
-    {
+    /* GET_METHOD */
+    else if (req.get_method() == GET) {
         char *argv[3];
         int fd[2];
         int pid;
@@ -323,8 +300,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
         /* apro il file con ACCESS */
         // std::cout << "quando qua dentro per capire se la path è corretta :" << path <<
         // std::endl;
-        if (access(path.c_str(), R_OK | X_OK) != -1) 
-        {
+        if (access(path.c_str(), R_OK | X_OK) != -1) {
             if (pipe(fd) == -1) {
                 std::cout << ERROR_OPEN_PIPE << std::endl;
                 return;
@@ -346,8 +322,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
                 execve(cmd.c_str(), argv, 0);
                 std::cout << ERROR_EXECVE << std::endl;
                 return;
-            }
-            else // parent process
+            } else // parent process
             {
                 close(fd[1]);
                 if (check_timer(fd[0], pid) == false) {
@@ -364,9 +339,7 @@ void Response::handle_cgi_response(Request &req, Response *resp, int language) {
                 resp->set_body(output); // uscita dalla funzione dell'output
                 return;
             }
-        }
-        else
-        {
+        } else {
             std::cout << ERROR_FILE_NOT_ACCESS << std::endl;
             return;
         }
@@ -389,18 +362,16 @@ std::string make_path(std::string &req_path, RouteConfig &rc, Config &srv) {
     return root + (rc_index[0] == '/' ? rc_index : '/' + rc_index);
 }
 
-void Response::handle_delete_request(Request &req, Response *resp, Config *server_config)
-{
+void Response::handle_delete_request(Request &req, Response *resp,
+                                     Config *server_config) {
     std::string file_path = req.get_path().substr(1);
 
-    if (access(file_path.c_str(), F_OK) != 0)
-    {
+    if (access(file_path.c_str(), F_OK) != 0) {
         std::cerr << "File not found: " << file_path << std::endl;
         return make_404(server_config);
     }
 
-    if (unlink(file_path.c_str()) != 0)
-    {
+    if (unlink(file_path.c_str()) != 0) {
         std::cerr << "Error deleting the file: " << file_path << std::endl;
         resp->set_protocol("HTTP/1.1");
         resp->set_status(STATUS_INTERNAL_SERVER_ERROR);
@@ -425,17 +396,14 @@ void Response::prepare_response(Request &req, Server *server) {
     Config &server_config = *server->get_config();
     std::string req_path = req.get_path();
 
-
     server->get_path_config(req_path, route_config);
     std::cout << route_config << std::endl;
-   
 
     if (route_config.get_allowed_methods() != 0 &&
         (route_config.get_allowed_methods() & req.get_method()) == 0)
         return make_405(&server_config);
 
-    if (req.get_method() == DELETE)
-    {
+    if (req.get_method() == DELETE) {
         return handle_delete_request(req, this, &server_config);
     }
 

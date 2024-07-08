@@ -1,5 +1,4 @@
 #include "../include/Config.hpp"
-#include <string>
 
 Config::Config() : RouteConfig() {
     _server_name = "";
@@ -39,10 +38,7 @@ Config &Config::operator=(const Config &c) {
     return *this;
 }
 
-bool Config::error_pages_empty() const
-{
-    return _error_pages.empty();
-}
+bool Config::error_pages_empty() const { return _error_pages.empty(); }
 
 void Config::set_server_name(const std::string &v) { _server_name = v; }
 

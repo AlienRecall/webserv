@@ -1,15 +1,4 @@
-#include "include/Config.hpp"
-#include "include/Logger.hpp"
-#include "include/PagesCache.hpp"
-#include "include/Server.hpp"
 #include "include/webserv.hpp"
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <sys/epoll.h>
-#include <unistd.h>
-#include <utility>
-#include <vector>
 
 std::map<const std::string, std::string> Pages::cache;
 
@@ -36,20 +25,19 @@ int main(int argc, char *argv[]) {
 
         w.logger.debug("loaded " + uitoa(parser.size()) + " servers.");
         w.logger.debug("setting up servers...");
-        for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++)
-        {
+        for (ConfigParser::iterator it = parser.begin(); it != parser.end(); it++) {
             Server s = Server(new Config(*it));
             s.open_socket();
             w.sm.push_server(s);
 
             Config *config = s.get_config();
 
-            for (Config::error_pages_iterator it_err = config->error_pages_begin(); it_err != config->error_pages_end(); it_err++)
-            {
+            for (Config::error_pages_iterator it_err = config->error_pages_begin();
+                 it_err != config->error_pages_end(); it_err++) {
                 if (access(("./html/" + it_err->second).c_str(), F_OK) != -1)
-                    Pages::push("./html/" + it_err->second, uitoa(it_err->first) + "_custom");
+                    Pages::push("./html/" + it_err->second,
+                                uitoa(it_err->first) + "_custom");
             }
-
         }
     }
     // std::cout << "Contents of Pages::cache:" << std::endl;
@@ -113,15 +101,3 @@ int main(int argc, char *argv[]) {
     }
     close(epoll_fd);
 }
-
-// test normal application with 2 servers
-// STACK: 0.000511 sec
-// HEAP: 0.001138 sec
-
-// test with pass function and 15 servers
-// STACK: 0.002603
-// HEAP: 0.001282
-
-// test normal application and 15 servers
-// STACK: 0.001623
-// HEAP: 0.000839

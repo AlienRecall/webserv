@@ -8,6 +8,7 @@
 #include "ServersManager.hpp"
 #include <cctype>
 #include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <sstream>
 #include <sys/epoll.h>

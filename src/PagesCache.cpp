@@ -1,5 +1,4 @@
 #include "../include/PagesCache.hpp"
-#include <string>
 
 void Pages::init() {
     push("./html/200.html", "200");
@@ -14,23 +13,20 @@ void Pages::init() {
     push("./html/post_cgi.html", "post_cgi");
 }
 
-Error Pages::push(const std::string &path, std::string key)
-{
+Error Pages::push(const std::string &path, std::string key) {
     // Controlla se il file contiene "_custom" prima dell'estensione ".html"
     size_t pos = path.rfind(".html");
-    if (pos != std::string::npos)
-    {
+    if (pos != std::string::npos) {
         size_t custom_pos = path.rfind("_custom", pos);
-        if (custom_pos != std::string::npos && custom_pos + 7 == pos)
-        {
-            std::cerr << "Error: Custom error files are not accepted. File: " << path << std::endl;
+        if (custom_pos != std::string::npos && custom_pos + 7 == pos) {
+            std::cerr << "Error: Custom error files are not accepted. File: " << path
+                      << std::endl;
             return INVALID_CUSTOM_FILE;
         }
     }
     std::ifstream file(path.c_str());
 
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         std::cerr << "Error: File " << path << " not found." << std::endl;
         // return OPEN_FILE;
     }

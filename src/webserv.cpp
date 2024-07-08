@@ -1,5 +1,4 @@
 #include "../include/webserv.hpp"
-#include <iostream>
 
 int add_epoll(int epoll_fd, int fd) {
     struct epoll_event event;
@@ -11,11 +10,9 @@ int add_epoll(int epoll_fd, int fd) {
     return OK;
 }
 
-void send_response(int client_fd, Response &res, Config *config, Error err = OK)
-{
+void send_response(int client_fd, Response &res, Config *config, Error err = OK) {
     char *response_str = res.c_str(); // Converte la risposta in una stringa C
-    if (!response_str) 
-    {
+    if (!response_str) {
         res.make_500(config);
         if (err != OK)
             res.make_400(config);

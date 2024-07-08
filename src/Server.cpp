@@ -1,5 +1,4 @@
 #include "../include/Server.hpp"
-#include <string>
 
 Server::Server(Config *conf) : _fd(0), logger(Logger("")), _config(conf) {
     std::string t = _config->get_server_name();

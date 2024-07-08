@@ -1,7 +1,4 @@
 #include "../include/Response.hpp"
-#include <cstring>
-#include <iostream>
-#include <string>
 
 std::string gen_random(const int len) {
     static const char alphanum[] = "0123456789"
